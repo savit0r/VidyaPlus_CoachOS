@@ -1,0 +1,93 @@
+# CoachOS v1 Requirements
+
+## v1 Requirements
+
+### Foundation & Multi-Tenancy
+- [x] **FOUND-01**: Super Admin can manage institutes (create, suspend, delete) *(Phase 1)*
+- [x] **FOUND-02**: Super Admin can manage subscription plans *(Phase 1)*
+- [x] **FOUND-03**: Super Admin can view platform KPIs *(Phase 1)*
+- [x] **FOUND-04**: JWT auth with phone+password login for Owner/Staff *(Phase 1)*
+- [x] **FOUND-05**: Tenant isolation — users scoped to their institute *(Phase 1)*
+
+### Student Management
+- [x] **STU-01**: Owner can add students with auto-generated student code (VP-YY-NNNN) *(Phase 2)*
+- [x] **STU-02**: Owner can search students by name, phone, student code *(Phase 2)*
+- [x] **STU-03**: Owner can view student profile with parent info *(Phase 2)*
+- [x] **STU-04**: Owner can edit/deactivate students *(Phase 2)*
+- [x] **STU-05**: Plan limits enforced (max students per plan) *(Phase 2)*
+
+### Batch Management
+- [x] **BATCH-01**: Owner can create batches with subject, days, time, capacity *(Phase 2)*
+- [x] **BATCH-02**: Teacher/room conflict detection prevents double-booking *(Phase 2)*
+- [x] **BATCH-03**: Owner can enroll/unenroll students from batches *(Phase 2)*
+- [x] **BATCH-04**: Capacity enforcement on batch enrollment *(Phase 2)*
+
+### Fee Plans
+- [x] **FEE-01**: Owner can create fee plans (monthly/quarterly/course/installment) *(Phase 2)*
+- [x] **FEE-02**: Owner can assign fee plans during batch enrollment *(Phase 2)*
+- [x] **FEE-03**: Fee plan protection — cannot delete plans with active enrollments *(Phase 2)*
+
+### Attendance
+- [ ] **ATT-01**: Owner/Teacher can mark batch attendance (present/absent/late per student)
+- [ ] **ATT-02**: Attendance calendar view (daily heatmap with absent highlights)
+- [ ] **ATT-03**: Attendance lock after 24 hours (admin override available)
+- [ ] **ATT-04**: Attendance summary per student (last 30 days stats)
+
+### Fee Collection & Payments
+- [ ] **PAY-01**: Auto-generate fee records (dues) from fee plans per billing period
+- [ ] **PAY-02**: Record payments with mode (cash/UPI/bank/cheque) and reference number
+- [ ] **PAY-03**: Fee dashboard with collection summary and overdue alerts
+- [ ] **PAY-04**: Per-student fee ledger (all dues, payments, balance)
+- [ ] **PAY-05**: Auto-numbered receipts for each payment
+
+### Staff & Delegation Engine
+- [ ] **STAFF-01**: Owner can add teachers with default permissions
+- [ ] **STAFF-02**: Owner can add accountants with default permissions
+- [ ] **STAFF-03**: Owner can create custom admin roles with any permission combination
+- [ ] **STAFF-04**: Staff login shows role-scoped sidebar (only permitted modules visible)
+- [ ] **STAFF-05**: Permission check on every API endpoint
+
+### Notifications
+- [ ] **NOTIF-01**: In-app notification bell with unread count
+- [ ] **NOTIF-02**: Auto fee reminder notifications (before due date)
+- [ ] **NOTIF-03**: Auto absence alert notifications (same day)
+
+### Reports
+- [ ] **REPORT-01**: Fee collection report (daily/monthly, filterable by batch/student)
+- [ ] **REPORT-02**: Attendance analytics (per student trends, per batch comparisons)
+
+### Settings
+- [ ] **SET-01**: Owner can edit institute profile (name, address, logo, academic year)
+- [ ] **SET-02**: Owner can configure notification preferences
+
+## v2 Requirements (Deferred)
+- Online payment gateway (Razorpay integration)
+- WhatsApp/SMS notification delivery
+- Student/Parent self-service portal
+- Multi-branch institute support
+- Timetable auto-generation
+- Mobile app (React Native)
+- Bulk student import via CSV
+
+## Out of Scope
+- Real-time video classes — not an EdTech platform
+- Content/course management — this is operations, not LMS
+- Accounting/GST — basic fee tracking only, not full accounting
+
+## Traceability
+
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| FOUND-01 to FOUND-05 | Phase 1 | ✅ Complete |
+| STU-01 to STU-05 | Phase 2 | ✅ Complete |
+| BATCH-01 to BATCH-04 | Phase 2 | ✅ Complete |
+| FEE-01 to FEE-03 | Phase 2 | ✅ Complete |
+| ATT-01 to ATT-04 | Phase 3 | 🔲 Pending |
+| PAY-01 to PAY-05 | Phase 4 | 🔲 Pending |
+| STAFF-01 to STAFF-05 | Phase 5 | 🔲 Pending |
+| NOTIF-01 to NOTIF-03 | Phase 6 | 🔲 Pending |
+| REPORT-01 to REPORT-02 | Phase 7 | 🔲 Pending |
+| SET-01 to SET-02 | Phase 7 | 🔲 Pending |
+
+---
+*Last updated: 2026-05-04*
