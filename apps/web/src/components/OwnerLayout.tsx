@@ -52,7 +52,7 @@ export default function OwnerLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="flex min-h-screen bg-surface-50 overflow-hidden">
       {/* Sidebar Overlay for Mobile */}
       {sidebarOpen && (
         <div 
@@ -60,7 +60,7 @@ export default function OwnerLayout() {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      <aside className={`fixed left-0 top-0 h-full bg-surface-900 text-white flex flex-col z-50 transition-all duration-300 ${sidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'}`}>
+      <aside className={`h-screen sticky top-0 bg-surface-900 text-white flex flex-col z-50 transition-all duration-300 flex-shrink-0 ${sidebarOpen ? 'w-64' : 'w-20 -translate-x-full md:translate-x-0'}`}>
         <div className={`px-5 h-16 flex items-center border-b border-surface-700 ${sidebarOpen ? 'gap-3' : 'justify-center'}`}>
           <div className="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
             <GraduationCap className="w-5 h-5" />
@@ -123,7 +123,7 @@ export default function OwnerLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className={`transition-all duration-300 min-h-screen ${sidebarOpen ? 'ml-0 md:ml-64' : 'ml-0 md:ml-20'}`}>
+      <main className="flex-1 min-h-screen min-w-0 overflow-y-auto transition-all duration-300">
         {/* Header */}
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-surface-200">
           <div className="px-6 py-4 flex items-center justify-between">
