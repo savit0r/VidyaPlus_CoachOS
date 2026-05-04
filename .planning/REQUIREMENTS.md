@@ -28,10 +28,10 @@
 - [x] **FEE-03**: Fee plan protection — cannot delete plans with active enrollments *(Phase 2)*
 
 ### Attendance
-- [ ] **ATT-01**: Owner/Teacher can mark batch attendance (present/absent/late per student)
-- [ ] **ATT-02**: Attendance calendar view (daily heatmap with absent highlights)
-- [ ] **ATT-03**: Attendance lock after 24 hours (admin override available)
-- [ ] **ATT-04**: Attendance summary per student (last 30 days stats)
+- [x] **ATT-01**: Owner/Teacher can mark batch attendance (present/absent/late per student)
+- [x] **ATT-02**: Attendance calendar view (daily heatmap with absent highlights)
+- [x] **ATT-03**: Attendance lock after 24 hours (admin override available)
+- [x] **ATT-04**: Attendance summary per student (last 30 days stats)
 
 ### Fee Collection & Payments
 - [ ] **PAY-01**: Auto-generate fee records (dues) from fee plans per billing period
@@ -82,7 +82,7 @@
 | STU-01 to STU-05 | Phase 2 | ✅ Complete |
 | BATCH-01 to BATCH-04 | Phase 2 | ✅ Complete |
 | FEE-01 to FEE-03 | Phase 2 | ✅ Complete |
-| ATT-01 to ATT-04 | Phase 3 | 🔲 Pending |
+| ATT-01 to ATT-04 | Phase 3 | ✅ Complete |
 | PAY-01 to PAY-05 | Phase 4 | 🔲 Pending |
 | STAFF-01 to STAFF-05 | Phase 5 | 🔲 Pending |
 | NOTIF-01 to NOTIF-03 | Phase 6 | 🔲 Pending |
