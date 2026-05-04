@@ -34,11 +34,11 @@
 - [x] **ATT-04**: Attendance summary per student (last 30 days stats)
 
 ### Fee Collection & Payments
-- [ ] **PAY-01**: Auto-generate fee records (dues) from fee plans per billing period
-- [ ] **PAY-02**: Record payments with mode (cash/UPI/bank/cheque) and reference number
-- [ ] **PAY-03**: Fee dashboard with collection summary and overdue alerts
-- [ ] **PAY-04**: Per-student fee ledger (all dues, payments, balance)
-- [ ] **PAY-05**: Auto-numbered receipts for each payment
+- [x] **PAY-01**: Auto-generate fee records (dues) from fee plans per billing period
+- [x] **PAY-02**: Record payments with mode (cash/UPI/bank/cheque) and reference number
+- [x] **PAY-03**: Fee dashboard with collection summary and overdue alerts
+- [x] **PAY-04**: Per-student fee ledger (all dues, payments, balance)
+- [x] **PAY-05**: Auto-numbered receipts for each payment
 
 ### Staff & Delegation Engine
 - [ ] **STAFF-01**: Owner can add teachers with default permissions
@@ -83,7 +83,7 @@
 | BATCH-01 to BATCH-04 | Phase 2 | ✅ Complete |
 | FEE-01 to FEE-03 | Phase 2 | ✅ Complete |
 | ATT-01 to ATT-04 | Phase 3 | ✅ Complete |
-| PAY-01 to PAY-05 | Phase 4 | 🔲 Pending |
+| PAY-01 to PAY-05 | Phase 4 | ✅ Complete |
 | STAFF-01 to STAFF-05 | Phase 5 | 🔲 Pending |
 | NOTIF-01 to NOTIF-03 | Phase 6 | 🔲 Pending |
 | REPORT-01 to REPORT-02 | Phase 7 | 🔲 Pending |

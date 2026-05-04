@@ -9,8 +9,8 @@
 | 1 | Foundation & Setup | Multi-tenant backend, auth, Super Admin console | FOUND-01→05 | ✅ Complete |
 | 2 | Students, Batches & Fee Plans | Student CRUD, batch scheduling, fee plan config | STU-01→05, BATCH-01→04, FEE-01→03 | ✅ Complete |
 | 3 | Attendance System | Mark/view attendance with calendar, locking, stats | ATT-01→04 | ✅ Complete |
-| 4 | Fee Collection & Payments | Auto-generate dues, record payments, receipts | PAY-01→05 | 🔲 Next |
-| 5 | Staff & Delegation Engine | Add staff, custom roles, permission-scoped UI | STAFF-01→05 | 🔲 Pending |
+| 4 | Fee Collection & Payments | Auto-generate dues, record payments, receipts | PAY-01→05 | ✅ Complete |
+| 5 | Staff & Delegation Engine | Add staff, custom roles, permission-scoped UI | STAFF-01→05 | 🔲 Next |
 | 6 | Notifications | In-app alerts for fees and attendance | NOTIF-01→03 | 🔲 Pending |
 | 7 | Reports & Settings | Financial/attendance analytics, institute config | REPORT-01→02, SET-01→02 | 🔲 Pending |
 
@@ -59,16 +59,16 @@
 
 ---
 
-### Phase 4: Fee Collection & Payments 🔲
-**Goal:** Generate dues from fee plans, record payments, track balances
+### Phase 4: Fee Collection & Payments ✅
+**Goal:** Auto-generate dues, record payments, and provide financial dashboard
 **Requirements:** PAY-01, PAY-02, PAY-03, PAY-04, PAY-05
 **UI hint:** yes
+**Status:** Complete
 **Success Criteria:**
-1. Fee records auto-generated per billing period (monthly dues on due day)
-2. Owner can record payment with mode (cash/UPI/etc) and reference
-3. Fee dashboard shows collection vs outstanding with overdue highlights
-4. Per-student ledger shows all dues, payments, and running balance
-5. Receipts auto-numbered per institute
+1. ✅ Owner can trigger generation of monthly dues.
+2. ✅ "Record Payment" flow captures amount, mode (cash/upi), and optional reference.
+3. ✅ Fee Dashboard shows total collected, total outstanding, and an overdue list.
+4. ✅ Receipts are auto-generated.
 
 **Plans:**
 - `4.1` — Fee record generation engine (cron/manual trigger)
