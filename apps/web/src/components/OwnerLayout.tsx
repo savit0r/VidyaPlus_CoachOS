@@ -53,8 +53,14 @@ export default function OwnerLayout() {
 
   return (
     <div className="min-h-screen bg-surface-50">
-      {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full bg-surface-900 text-white flex flex-col z-50 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
+      {/* Sidebar Overlay for Mobile */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside className={`fixed left-0 top-0 h-full bg-surface-900 text-white flex flex-col z-50 transition-all duration-300 ${sidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'}`}>
         <div className={`px-5 h-16 flex items-center border-b border-surface-700 ${sidebarOpen ? 'gap-3' : 'justify-center'}`}>
           <div className="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
             <GraduationCap className="w-5 h-5" />
@@ -73,7 +79,12 @@ export default function OwnerLayout() {
             return (
               <button
                 key={label}
-                onClick={() => navigate(path)}
+                onClick={() => {
+                  navigate(path);
+                  if (window.innerWidth < 768) {
+                    setSidebarOpen(false);
+                  }
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-primary-600 text-white shadow-sm'
@@ -112,7 +123,7 @@ export default function OwnerLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+      <main className={`transition-all duration-300 min-h-screen ${sidebarOpen ? 'ml-0 md:ml-64' : 'ml-0 md:ml-20'}`}>
         {/* Header */}
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-surface-200">
           <div className="px-6 py-4 flex items-center justify-between">

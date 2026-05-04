@@ -14,6 +14,8 @@ import attendanceRoutes from './modules/attendance/attendance.routes';
 import feeRoutes from './modules/fees/fee.routes';
 import staffRoutes from './modules/staff/staff.routes';
 import notificationRoutes from './modules/notifications/notification.routes';
+import reportRoutes from './modules/reports/report.routes';
+import settingsRoutes from './modules/institute-settings/settings.routes';
 
 const app = express();
 
@@ -66,6 +68,8 @@ app.use('/api/v1/attendance', attendanceRoutes);
 app.use('/api/v1/fees', feeRoutes);
 app.use('/api/v1/staff', staffRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 
 // 404 and error handlers (must be last)
 app.use(notFoundHandler);
