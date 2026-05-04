@@ -29,7 +29,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute per IP
+  max: 2000, // 2000 requests per minute
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests', code: 'RATE_LIMITED' },
@@ -38,8 +38,8 @@ app.use(limiter);
 
 // Auth rate limiting (stricter)
 const authLimiter = rateLimit({
-  windowMs: 30 * 60 * 1000, // 30 minutes
-  max: 10, // 10 auth requests per 30 min per IP
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Very lenient for active user/agent pair testing
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many authentication attempts', code: 'AUTH_RATE_LIMITED' },
