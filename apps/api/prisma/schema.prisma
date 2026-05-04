@@ -1,0 +1,403 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// Subscription Plans (Super Admin managed)
+// ============================================
+model Plan {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @db.VarChar(100)
+  maxStudents   Int      @map("max_students")
+  maxStaff      Int      @map("max_staff")
+  maxStorageMb  Int      @map("max_storage_mb")
+  featuresJson  Json     @default("{}") @map("features_json")
+  priceMonthly  Decimal  @map("price_monthly") @db.Decimal(10, 2)
+  status        String   @default("active") @db.VarChar(20)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  institutes Institute[]
+
+  @@map("plans")
+}
+
+// ============================================
+// Institute (Tenant)
+// ============================================
+model Institute {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String   @db.VarChar(255)
+  subdomain       String   @unique @db.VarChar(100)
+  phone           String   @db.VarChar(15)
+  email           String?  @db.VarChar(255)
+  address         String?
+  logoUrl         String?  @map("logo_url") @db.VarChar(500)
+  planId          String?  @map("plan_id") @db.Uuid
+  academicYear    String?  @map("academic_year") @db.VarChar(20)
+  status          String   @default("active") @db.VarChar(20)
+  settingsJson    Json     @default("{}") @map("settings_json")
+  setupCompleted  Boolean  @default(false) @map("setup_completed")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  plan             Plan?              @relation(fields: [planId], references: [id])
+  users            User[]
+  studentProfiles  StudentProfile[]
+  batches          Batch[]
+  batchEnrollments BatchEnrollment[]
+  feePlans         FeePlan[]
+  feeRecords       FeeRecord[]
+  payments         Payment[]
+  receipts         Receipt[]
+  attendanceRecords AttendanceRecord[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  holidays         Holiday[]
+
+  @@map("institutes")
+}
+
+// ============================================
+// User (all roles in one table)
+// ============================================
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  instituteId     String?   @map("institute_id") @db.Uuid
+  name            String    @db.VarChar(255)
+  phone           String    @db.VarChar(15)
+  email           String?   @db.VarChar(255)
+  passwordHash    String?   @map("password_hash") @db.VarChar(255)
+  role            String    @db.VarChar(20)
+  permissionsJson Json      @default("[]") @map("permissions_json")
+  photoUrl        String?   @map("photo_url") @db.VarChar(500)
+  dob             DateTime? @db.Date
+  address         String?
+  status          String    @default("active") @db.VarChar(20)
+  lastLoginAt     DateTime? @map("last_login_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  institute        Institute?        @relation(fields: [instituteId], references: [id])
+  studentProfile   StudentProfile?   @relation("UserStudent")
+  parentStudents   StudentProfile[]  @relation("ParentUser")
+  teacherBatches   Batch[]           @relation("TeacherBatches")
+  refreshTokens    RefreshToken[]
+  markedAttendance AttendanceRecord[] @relation("MarkedBy")
+  studentAttendance AttendanceRecord[] @relation("StudentAttendance")
+  recordedPayments Payment[]         @relation("RecordedBy")
+  voidedPayments   Payment[]         @relation("VoidedBy")
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+
+  @@unique([instituteId, phone, role])
+  @@index([instituteId])
+  @@index([phone])
+  @@map("users")
+}
+
+// ============================================
+// Student Profile (extends User)
+// ============================================
+model StudentProfile {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @unique @map("user_id") @db.Uuid
+  instituteId  String   @map("institute_id") @db.Uuid
+  studentCode  String   @unique @map("student_code") @db.VarChar(50)
+  parentUserId String?  @map("parent_user_id") @db.Uuid
+  parentPhone  String?  @map("parent_phone") @db.VarChar(15)
+  parentName   String?  @map("parent_name") @db.VarChar(255)
+  enrolledAt   DateTime @default(now()) @map("enrolled_at") @db.Date
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user       User       @relation("UserStudent", fields: [userId], references: [id])
+  parentUser User?      @relation("ParentUser", fields: [parentUserId], references: [id])
+  institute  Institute  @relation(fields: [instituteId], references: [id])
+
+  @@index([instituteId])
+  @@map("student_profiles")
+}
+
+// ============================================
+// Batch
+// ============================================
+model Batch {
+  id           String    @id @default(uuid()) @db.Uuid
+  instituteId  String    @map("institute_id") @db.Uuid
+  name         String    @db.VarChar(255)
+  subject      String?   @db.VarChar(100)
+  teacherId    String?   @map("teacher_id") @db.Uuid
+  room         String?   @db.VarChar(100)
+  daysJson     Json      @map("days_json")
+  startTime    String    @map("start_time") @db.VarChar(10)
+  endTime      String    @map("end_time") @db.VarChar(10)
+  capacity     Int       @default(30)
+  startDate    DateTime? @map("start_date") @db.Date
+  endDate      DateTime? @map("end_date") @db.Date
+  status       String    @default("active") @db.VarChar(20)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  institute    Institute          @relation(fields: [instituteId], references: [id])
+  teacher      User?              @relation("TeacherBatches", fields: [teacherId], references: [id])
+  enrollments  BatchEnrollment[]
+  attendance   AttendanceRecord[]
+
+  @@index([instituteId])
+  @@map("batches")
+}
+
+// ============================================
+// Batch Enrollment (Student ↔ Batch junction)
+// ============================================
+model BatchEnrollment {
+  id           String   @id @default(uuid()) @db.Uuid
+  instituteId  String   @map("institute_id") @db.Uuid
+  studentId    String   @map("student_id") @db.Uuid
+  batchId      String   @map("batch_id") @db.Uuid
+  feePlanId    String?  @map("fee_plan_id") @db.Uuid
+  enrolledAt   DateTime @default(now()) @map("enrolled_at") @db.Date
+  status       String   @default("active") @db.VarChar(20)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+  batch     Batch     @relation(fields: [batchId], references: [id])
+  feePlan   FeePlan?  @relation(fields: [feePlanId], references: [id])
+
+  @@unique([studentId, batchId])
+  @@index([instituteId])
+  @@map("batch_enrollments")
+}
+
+// ============================================
+// Fee Plan
+// ============================================
+model FeePlan {
+  id           String    @id @default(uuid()) @db.Uuid
+  instituteId  String    @map("institute_id") @db.Uuid
+  name         String    @db.VarChar(255)
+  amount       Decimal   @db.Decimal(10, 2)
+  frequency    String    @db.VarChar(20)
+  dueDay       Int?      @map("due_day")
+  description  String?
+  status       String    @default("active") @db.VarChar(20)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  institute   Institute         @relation(fields: [instituteId], references: [id])
+  enrollments BatchEnrollment[]
+  feeRecords  FeeRecord[]
+
+  @@index([instituteId])
+  @@map("fee_plans")
+}
+
+// ============================================
+// Fee Record (Due)
+// ============================================
+model FeeRecord {
+  id           String   @id @default(uuid()) @db.Uuid
+  instituteId  String   @map("institute_id") @db.Uuid
+  studentId    String   @map("student_id") @db.Uuid
+  feePlanId    String   @map("fee_plan_id") @db.Uuid
+  amount       Decimal  @db.Decimal(10, 2)
+  dueDate      DateTime @map("due_date") @db.Date
+  status       String   @default("pending") @db.VarChar(20)
+  periodLabel  String?  @map("period_label") @db.VarChar(50)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+  feePlan   FeePlan   @relation(fields: [feePlanId], references: [id])
+  payments  Payment[]
+
+  @@index([instituteId, status])
+  @@map("fee_records")
+}
+
+// ============================================
+// Payment
+// ============================================
+model Payment {
+  id                String    @id @default(uuid()) @db.Uuid
+  instituteId       String    @map("institute_id") @db.Uuid
+  feeRecordId       String    @map("fee_record_id") @db.Uuid
+  amount            Decimal   @db.Decimal(10, 2)
+  paymentMode       String    @map("payment_mode") @db.VarChar(20)
+  referenceNo       String?   @map("reference_no") @db.VarChar(100)
+  paidAt            DateTime  @default(now()) @map("paid_at")
+  recordedBy        String    @map("recorded_by") @db.Uuid
+  idempotencyKey    String?   @unique @map("idempotency_key") @db.VarChar(100)
+  razorpayOrderId   String?   @map("razorpay_order_id") @db.VarChar(100)
+  razorpayPaymentId String?   @map("razorpay_payment_id") @db.VarChar(100)
+  status            String    @default("completed") @db.VarChar(20)
+  voidReason        String?   @map("void_reason")
+  voidedBy          String?   @map("voided_by") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  institute  Institute  @relation(fields: [instituteId], references: [id])
+  feeRecord  FeeRecord  @relation(fields: [feeRecordId], references: [id])
+  recorder   User       @relation("RecordedBy", fields: [recordedBy], references: [id])
+  voider     User?      @relation("VoidedBy", fields: [voidedBy], references: [id])
+  receipt    Receipt?
+
+  @@index([instituteId])
+  @@map("payments")
+}
+
+// ============================================
+// Receipt
+// ============================================
+model Receipt {
+  id              String    @id @default(uuid()) @db.Uuid
+  instituteId     String    @map("institute_id") @db.Uuid
+  paymentId       String    @unique @map("payment_id") @db.Uuid
+  receiptNumber   String    @unique @map("receipt_number") @db.VarChar(50)
+  pdfUrl          String?   @map("pdf_url") @db.VarChar(500)
+  sentAt          DateTime? @map("sent_at")
+  deliveryStatus  String    @default("pending") @map("delivery_status") @db.VarChar(20)
+  channel         String?   @db.VarChar(20)
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+  payment   Payment   @relation(fields: [paymentId], references: [id])
+
+  @@index([instituteId])
+  @@map("receipts")
+}
+
+// ============================================
+// Attendance Record
+// ============================================
+model AttendanceRecord {
+  id               String    @id @default(uuid()) @db.Uuid
+  instituteId      String    @map("institute_id") @db.Uuid
+  batchId          String    @map("batch_id") @db.Uuid
+  studentId        String    @map("student_id") @db.Uuid
+  date             DateTime  @db.Date
+  status           String    @db.VarChar(10)
+  markedById       String    @map("marked_by") @db.Uuid
+  markedAt         DateTime  @default(now()) @map("marked_at")
+  note             String?
+  isLocked         Boolean   @default(false) @map("is_locked")
+  isLateSubmission Boolean   @default(false) @map("is_late_submission")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+  batch     Batch     @relation(fields: [batchId], references: [id])
+  student   User      @relation("StudentAttendance", fields: [studentId], references: [id])
+  markedBy  User      @relation("MarkedBy", fields: [markedById], references: [id])
+
+  @@unique([batchId, studentId, date])
+  @@index([batchId, date])
+  @@index([studentId, date])
+  @@index([instituteId])
+  @@map("attendance_records")
+}
+
+// ============================================
+// Notification
+// ============================================
+model Notification {
+  id            String    @id @default(uuid()) @db.Uuid
+  instituteId   String    @map("institute_id") @db.Uuid
+  recipientId   String    @map("recipient_id") @db.Uuid
+  recipientType String?   @map("recipient_type") @db.VarChar(20)
+  channel       String    @db.VarChar(20)
+  templateId    String?   @map("template_id") @db.VarChar(50)
+  content       String
+  status        String    @default("queued") @db.VarChar(20)
+  sentAt        DateTime? @map("sent_at")
+  deliveredAt   DateTime? @map("delivered_at")
+  retryCount    Int       @default(0) @map("retry_count")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+  recipient User      @relation(fields: [recipientId], references: [id])
+
+  @@index([instituteId, createdAt])
+  @@map("notifications")
+}
+
+// ============================================
+// Audit Log
+// ============================================
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  instituteId String?  @map("institute_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  action      String   @db.VarChar(50)
+  entityType  String   @map("entity_type") @db.VarChar(50)
+  entityId    String?  @map("entity_id") @db.Uuid
+  beforeJson  Json?    @map("before_json")
+  afterJson   Json?    @map("after_json")
+  ipAddress   String?  @map("ip_address") @db.VarChar(45)
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  institute Institute? @relation(fields: [instituteId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@index([instituteId, createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// Refresh Token
+// ============================================
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  tokenHash  String    @map("token_hash") @db.VarChar(255)
+  deviceInfo String?   @map("device_info")
+  ipAddress  String?   @map("ip_address") @db.VarChar(45)
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// Holiday
+// ============================================
+model Holiday {
+  id          String   @id @default(uuid()) @db.Uuid
+  instituteId String   @map("institute_id") @db.Uuid
+  name        String   @db.VarChar(255)
+  date        DateTime @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+
+  @@index([instituteId])
+  @@map("holidays")
+}
+
+// ============================================
+// OTP Store
+// ============================================
+model OtpStore {
+  id        String   @id @default(uuid()) @db.Uuid
+  phone     String   @db.VarChar(15)
+  otp       String   @db.VarChar(10)
+  attempts  Int      @default(0)
+  expiresAt DateTime @map("expires_at")
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([phone])
+  @@map("otp_store")
+}

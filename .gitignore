@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+*.log
+.turbo/
+coverage/
+.DS_Store
+
+# Prisma
+apps/api/prisma/*.db
+
+# Generated text files from PDF extraction
+*.txt
+!README.txt
+
+# PDF source docs (keep in repo or not — your choice)
+# *.pdf
