@@ -13,6 +13,7 @@ import feePlanRoutes from './modules/fee-plans/fee-plan.routes';
 import attendanceRoutes from './modules/attendance/attendance.routes';
 import feeRoutes from './modules/fees/fee.routes';
 import staffRoutes from './modules/staff/staff.routes';
+import notificationRoutes from './modules/notifications/notification.routes';
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use('/api/v1/fee-plans', feePlanRoutes);
 app.use('/api/v1/attendance', attendanceRoutes);
 app.use('/api/v1/fees', feeRoutes);
 app.use('/api/v1/staff', staffRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // 404 and error handlers (must be last)
 app.use(notFoundHandler);

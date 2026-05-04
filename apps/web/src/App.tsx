@@ -13,6 +13,7 @@ import StudentLedgerPage from './features/fees/StudentLedgerPage';
 import ReceiptView from './features/fees/ReceiptView';
 import AttendancePage from './features/attendance/AttendancePage';
 import StaffPage from './features/staff/StaffPage';
+import NotificationPage from './features/notifications/NotificationPage';
 
 export default function App() {
   const { isAuthenticated, fetchUser } = useAuthStore();
@@ -42,7 +43,7 @@ export default function App() {
             <Route path="/fees/receipt/:receiptNumber" element={<ReceiptView />} />
             {/* Phase 3+ — Placeholders */}
             <Route path="/attendance" element={<AttendancePage />} />
-            <Route path="/notifications" element={<PlaceholderPage title="Notifications" description="Send announcements, fee reminders, and absence alerts" />} />
+            <Route path="/notifications" element={<NotificationPage />} />
             <Route path="/reports" element={<PlaceholderPage title="Reports" description="Financial reports, attendance analytics, and enrollment insights" />} />
             <Route path="/staff" element={<StaffPage />} />
             <Route path="/settings" element={<PlaceholderPage title="Settings" description="Institute profile, academic year, and system configuration" />} />

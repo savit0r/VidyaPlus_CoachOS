@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
+import api from '../lib/api';
 import {
   GraduationCap, Users, CalendarCheck, IndianRupee, Bell,
   TrendingUp, BookOpen, UserCog, Settings, LogOut, LayoutDashboard,
@@ -22,8 +23,24 @@ const NAV_ITEMS = [
 export default function OwnerLayout() {
   const { user, logout, hasPermission } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const fetchUnreadCount = async () => {
+    try {
+      const { data } = await api.get('/notifications');
+      setUnreadCount(data.data.unreadCount || 0);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await logout();
@@ -114,9 +131,17 @@ export default function OwnerLayout() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-lg hover:bg-surface-100 transition-colors">
+              <button
+                onClick={() => navigate('/notifications')}
+                className="relative p-2 rounded-lg hover:bg-surface-100 transition-colors"
+                title="View Notifications"
+              >
                 <Bell className="w-5 h-5 text-surface-500" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center bg-danger-500 text-white text-[10px] font-bold rounded-full select-none">
+                    {unreadCount}
+                  </span>
+                )}
               </button>
               <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center">
                 <span className="text-sm font-semibold text-primary-700">{user?.name?.charAt(0) || 'U'}</span>

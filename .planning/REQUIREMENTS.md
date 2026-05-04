@@ -48,9 +48,9 @@
 - [x] **STAFF-05**: Permission check on every API endpoint
 
 ### Notifications
-- [ ] **NOTIF-01**: In-app notification bell with unread count
-- [ ] **NOTIF-02**: Auto fee reminder notifications (before due date)
-- [ ] **NOTIF-03**: Auto absence alert notifications (same day)
+- [x] **NOTIF-01**: In-app notification bell with unread count
+- [x] **NOTIF-02**: Auto fee reminder notifications (before due date)
+- [x] **NOTIF-03**: Auto absence alert notifications (same day)
 
 ### Reports
 - [ ] **REPORT-01**: Fee collection report (daily/monthly, filterable by batch/student)
@@ -85,7 +85,7 @@
 | ATT-01 to ATT-04 | Phase 3 | ✅ Complete |
 | PAY-01 to PAY-05 | Phase 4 | ✅ Complete |
 | STAFF-01 to STAFF-05 | Phase 5 | ✅ Complete |
-| NOTIF-01 to NOTIF-03 | Phase 6 | 🔲 Pending |
+| NOTIF-01 to NOTIF-03 | Phase 6 | ✅ Complete |
 | REPORT-01 to REPORT-02 | Phase 7 | 🔲 Pending |
 | SET-01 to SET-02 | Phase 7 | 🔲 Pending |
 

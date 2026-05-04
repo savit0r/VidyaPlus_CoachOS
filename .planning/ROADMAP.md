@@ -11,8 +11,8 @@
 | 3 | Attendance System | Mark/view attendance with calendar, locking, stats | ATT-01→04 | ✅ Complete |
 | 4 | Fee Collection & Payments | Auto-generate dues, record payments, receipts | PAY-01→05 | ✅ Complete |
 | 5 | Staff & Delegation Engine | Add staff, custom roles, permission-scoped UI | STAFF-01→05 | ✅ Complete |
-| 6 | Notifications | In-app alerts for fees and attendance | NOTIF-01→03 | 🔲 Next |
-| 7 | Reports & Settings | Financial/attendance analytics, institute config | REPORT-01→02, SET-01→02 | 🔲 Pending |
+| 6 | Notifications | In-app alerts for fees and attendance | NOTIF-01→03 | ✅ Complete |
+| 7 | Reports & Settings | Financial/attendance analytics, institute config | REPORT-01→02, SET-01→02 | 🔲 Next |
 
 ---
 
@@ -99,15 +99,16 @@
 
 ---
 
-### Phase 6: Notifications 🔲
+### Phase 6: Notifications ✅
 **Goal:** In-app notification system for fee reminders and absence alerts
 **Requirements:** NOTIF-01, NOTIF-02, NOTIF-03
 **UI hint:** yes
+**Status:** Complete
 **Success Criteria:**
-1. Notification bell shows unread count in header
-2. Fee reminder auto-created 3 days before due date
-3. Absence notification created same day for absent students
-4. Notification list with read/unread state
+1. ✅ Notification bell shows unread count in header
+2. ✅ Fee reminder auto-created 3 days before due date
+3. ✅ Absence notification created same day for absent students
+4. ✅ Notification list with read/unread state
 
 **Plans:**
 - `6.1` — Notification API and auto-generation triggers

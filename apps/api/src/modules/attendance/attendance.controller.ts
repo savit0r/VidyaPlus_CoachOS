@@ -116,6 +116,33 @@ export const attendanceController = {
         )
       );
 
+      // Create in-app absence notifications
+      const absentRecords = body.records.filter(r => r.status === 'absent');
+      if (absentRecords.length > 0) {
+        const owners = await prisma.user.findMany({
+          where: { instituteId, role: 'owner', status: 'active', deletedAt: null }
+        });
+        if (owners.length > 0) {
+          for (const rec of absentRecords) {
+            const stu = await prisma.user.findFirst({ where: { id: rec.studentId } });
+            if (stu) {
+              const content = `Absence Alert: Student ${stu.name} was marked absent for batch "${batch.name}" on ${body.date}.`;
+              for (const owner of owners) {
+                await prisma.notification.create({
+                  data: {
+                    instituteId,
+                    recipientId: owner.id,
+                    channel: 'in_app',
+                    content,
+                    status: 'unread',
+                  }
+                });
+              }
+            }
+          }
+        }
+      }
+
       // Audit log
       await prisma.auditLog.create({
         data: {
