@@ -31,10 +31,16 @@ export default function AdminLayout() {
   const pageTitle = currentNav?.label || 'Platform Overview';
 
   return (
-    <div className="min-h-screen flex">
-      {/* Sidebar */}
+    <div className="flex min-h-screen bg-surface-950 text-white overflow-hidden">
+      {/* Sidebar Overlay for Mobile */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex flex-col transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}
+        className={`h-screen sticky top-0 flex flex-col transition-all duration-300 flex-shrink-0 z-50 ${sidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'}`}
         style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%)' }}
       >
         {/* Logo */}
@@ -52,13 +58,18 @@ export default function AdminLayout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1">
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
             return (
               <button
                 key={item.id}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  if (window.innerWidth < 768) {
+                    setSidebarOpen(false);
+                  }
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   isActive ? 'bg-admin-600/20 text-admin-300 shadow-sm' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/50'
                 }`}
@@ -97,7 +108,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+      <main className="flex-1 min-h-screen min-w-0 overflow-y-auto transition-all duration-300">
         {/* Top Bar */}
         <header className="sticky top-0 z-20 h-16 flex items-center justify-between px-6 border-b border-surface-800/50 bg-surface-950/80 backdrop-blur-xl">
           <div className="flex items-center gap-4">
