@@ -2,9 +2,9 @@
 
 ## Current Position
 - **Milestone:** 1 (Core Platform)
-- **Current Phase:** 5 (Staff & Delegation Engine)
+- **Current Phase:** 6 (Notifications)
 - **Phase Status:** NOT_STARTED
-- **Next Action:** Plan Phase 5
+- **Next Action:** Plan Phase 6
 
 ## Phase Progress
 
@@ -14,7 +14,7 @@
 | 2 | Students, Batches & Fee Plans | ✅ COMPLETE | 3/3 | 2026-05-04 |
 | 3 | Attendance System | ✅ COMPLETE | 3/3 | 2026-05-04 |
 | 4 | Fee Collection & Payments | ✅ COMPLETE | 5/5 | 2026-05-04 |
-| 5 | Staff & Delegation Engine | 🔲 NOT_STARTED | 0/4 | — |
+| 5 | Staff & Delegation Engine | ✅ COMPLETE | 4/4 | 2026-05-04 |
 | 6 | Notifications | 🔲 NOT_STARTED | 0/2 | — |
 | 7 | Reports & Settings | 🔲 NOT_STARTED | 0/3 | — |
 
@@ -26,6 +26,11 @@
 - Super Admin APIs: institute CRUD, plan management, KPIs, audit logging
 - Admin Console (apps/admin): dark theme login, dashboard with live KPIs, institute management
 - Owner dashboard shell with 9-module sidebar
+
+### Phase 5 Deliverables
+- Staff & Delegation Engine CRUD (add, update, delete, permissions)
+- Staff Salary Payroll management (baseSalary, Payroll record, history)
+- Complete UI support for permissions checklists and payroll ledger
 
 ### Phase 4 Deliverables
 - Fee Controller (dues generation, record payments, dashboard stats, ledger)

@@ -6,13 +6,20 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import authRoutes from './modules/auth/auth.routes';
+import superAdminRoutes from './modules/super-admin/super-admin.routes';
+import studentRoutes from './modules/students/student.routes';
+import batchRoutes from './modules/batches/batch.routes';
+import feePlanRoutes from './modules/fee-plans/fee-plan.routes';
+import attendanceRoutes from './modules/attendance/attendance.routes';
+import feeRoutes from './modules/fees/fee.routes';
+import staffRoutes from './modules/staff/staff.routes';
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174').split(',').map(s => s.trim()),
   credentials: true,
 }));
 
@@ -50,6 +57,13 @@ app.get('/api/health', (_req, res) => {
 
 // API Routes
 app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/super-admin', superAdminRoutes);
+app.use('/api/v1/students', studentRoutes);
+app.use('/api/v1/batches', batchRoutes);
+app.use('/api/v1/fee-plans', feePlanRoutes);
+app.use('/api/v1/attendance', attendanceRoutes);
+app.use('/api/v1/fees', feeRoutes);
+app.use('/api/v1/staff', staffRoutes);
 
 // 404 and error handlers (must be last)
 app.use(notFoundHandler);

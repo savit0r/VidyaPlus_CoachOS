@@ -13,6 +13,7 @@
     "lint": "turbo run lint",
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:web": "npm run dev --workspace=apps/web",
+    "dev:admin": "npm run dev --workspace=apps/admin",
     "db:migrate": "npm run db:migrate --workspace=apps/api",
     "db:generate": "npm run db:generate --workspace=apps/api",
     "db:seed": "npm run db:seed --workspace=apps/api",

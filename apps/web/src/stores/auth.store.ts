@@ -25,6 +25,7 @@ interface AuthState {
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
   clearError: () => void;
+  hasPermission: (permission: string) => boolean;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -114,4 +115,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  hasPermission: (permission: string) => {
+    const user = useAuthStore.getState().user;
+    if (!user) return false;
+    if (user.role === 'owner') return true;
+    return user.permissions?.includes(permission) || false;
+  },
 }));

@@ -41,11 +41,11 @@
 - [x] **PAY-05**: Auto-numbered receipts for each payment
 
 ### Staff & Delegation Engine
-- [ ] **STAFF-01**: Owner can add teachers with default permissions
-- [ ] **STAFF-02**: Owner can add accountants with default permissions
-- [ ] **STAFF-03**: Owner can create custom admin roles with any permission combination
-- [ ] **STAFF-04**: Staff login shows role-scoped sidebar (only permitted modules visible)
-- [ ] **STAFF-05**: Permission check on every API endpoint
+- [x] **STAFF-01**: Owner can add teachers with default permissions
+- [x] **STAFF-02**: Owner can add accountants with default permissions
+- [x] **STAFF-03**: Owner can create custom admin roles with any permission combination
+- [x] **STAFF-04**: Staff login shows role-scoped sidebar (only permitted modules visible)
+- [x] **STAFF-05**: Permission check on every API endpoint
 
 ### Notifications
 - [ ] **NOTIF-01**: In-app notification bell with unread count
@@ -84,7 +84,7 @@
 | FEE-01 to FEE-03 | Phase 2 | ✅ Complete |
 | ATT-01 to ATT-04 | Phase 3 | ✅ Complete |
 | PAY-01 to PAY-05 | Phase 4 | ✅ Complete |
-| STAFF-01 to STAFF-05 | Phase 5 | 🔲 Pending |
+| STAFF-01 to STAFF-05 | Phase 5 | ✅ Complete |
 | NOTIF-01 to NOTIF-03 | Phase 6 | 🔲 Pending |
 | REPORT-01 to REPORT-02 | Phase 7 | 🔲 Pending |
 | SET-01 to SET-02 | Phase 7 | 🔲 Pending |

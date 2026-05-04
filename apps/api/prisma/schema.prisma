@@ -59,6 +59,7 @@ model Institute {
   notifications    Notification[]
   auditLogs        AuditLog[]
   holidays         Holiday[]
+  payrollRecords   PayrollRecord[]
 
   @@map("institutes")
 }
@@ -78,6 +79,7 @@ model User {
   photoUrl        String?   @map("photo_url") @db.VarChar(500)
   dob             DateTime? @db.Date
   address         String?
+  baseSalary      Decimal   @default(0.00) @map("base_salary") @db.Decimal(10,2)
   status          String    @default("active") @db.VarChar(20)
   lastLoginAt     DateTime? @map("last_login_at")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -95,6 +97,7 @@ model User {
   voidedPayments   Payment[]         @relation("VoidedBy")
   auditLogs        AuditLog[]
   notifications    Notification[]
+  payrollRecords   PayrollRecord[]   @relation("StaffPayroll")
 
   @@unique([instituteId, phone, role])
   @@index([instituteId])
@@ -119,6 +122,7 @@ model StudentProfile {
   user       User       @relation("UserStudent", fields: [userId], references: [id])
   parentUser User?      @relation("ParentUser", fields: [parentUserId], references: [id])
   institute  Institute  @relation(fields: [instituteId], references: [id])
+  feeRecords FeeRecord[]
 
   @@index([instituteId])
   @@map("student_profiles")
@@ -216,6 +220,7 @@ model FeeRecord {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [id])
   feePlan   FeePlan   @relation(fields: [feePlanId], references: [id])
   payments  Payment[]
 
@@ -400,4 +405,28 @@ model OtpStore {
 
   @@index([phone])
   @@map("otp_store")
+}
+
+// ============================================
+// Payroll Record (Staff Salaries)
+// ============================================
+model PayrollRecord {
+  id            String   @id @default(uuid()) @db.Uuid
+  instituteId   String   @map("institute_id") @db.Uuid
+  staffId       String   @map("staff_id") @db.Uuid
+  amount        Decimal  @db.Decimal(10,2)
+  paymentMode   String   @map("payment_mode") @db.VarChar(50) // cash, upi, bank
+  referenceNo   String?  @map("reference_no") @db.VarChar(100)
+  month         Int
+  year          Int
+  paymentDate   DateTime @default(now()) @map("payment_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+  staff     User      @relation("StaffPayroll", fields: [staffId], references: [id])
+
+  @@index([instituteId])
+  @@index([staffId])
+  @@map("payroll_records")
 }

@@ -65,30 +65,33 @@ async function main() {
 
   console.log('✅ Plans created:', [trialPlan.name, starterPlan.name, growthPlan.name, proPlan.name].join(', '));
 
-  // 2. Create Super Admin user
+  // 2. Create Super Admin user (instituteId is null — super admin is platform-level)
+  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || 'admin@vidyaplus.in';
   const superAdminPassword = await bcrypt.hash(process.env.SUPER_ADMIN_PASSWORD || 'Admin@2026', 12);
 
-  const superAdmin = await prisma.user.upsert({
-    where: {
-      instituteId_phone_role: {
-        instituteId: '00000000-0000-0000-0000-000000000000', // dummy for unique constraint
-        phone: '9999999999',
-        role: 'super_admin',
-      },
-    },
-    update: {},
-    create: {
-      name: 'VidyaPlus Admin',
-      phone: '9999999999',
-      email: process.env.SUPER_ADMIN_EMAIL || 'admin@vidyaplus.in',
-      passwordHash: superAdminPassword,
-      role: 'super_admin',
-      permissionsJson: [],
-      status: 'active',
-    },
+  const existingSuperAdmin = await prisma.user.findFirst({
+    where: { email: superAdminEmail, role: 'super_admin' },
   });
 
-  console.log(`✅ Super Admin created: ${superAdmin.email} (phone: ${superAdmin.phone})`);
+  let superAdmin;
+  if (existingSuperAdmin) {
+    superAdmin = existingSuperAdmin;
+    console.log(`✅ Super Admin already exists: ${superAdmin.email}`);
+  } else {
+    superAdmin = await prisma.user.create({
+      data: {
+        name: 'VidyaPlus Admin',
+        phone: '9999999999',
+        email: superAdminEmail,
+        passwordHash: superAdminPassword,
+        role: 'super_admin',
+        permissionsJson: [],
+        status: 'active',
+        // instituteId is null — super admin belongs to no institute
+      },
+    });
+    console.log(`✅ Super Admin created: ${superAdmin.email} (phone: ${superAdmin.phone})`);
+  }
 
   // 3. Create a demo institute for development
   const demoInstitute = await prisma.institute.upsert({
@@ -112,28 +115,29 @@ async function main() {
   // 4. Create demo Owner for the institute
   const ownerPassword = await bcrypt.hash('Owner@2026', 12);
 
-  const demoOwner = await prisma.user.upsert({
-    where: {
-      instituteId_phone_role: {
-        instituteId: demoInstitute.id,
-        phone: '9876543210',
-        role: 'owner',
-      },
-    },
-    update: {},
-    create: {
-      instituteId: demoInstitute.id,
-      name: 'Rahul Sharma',
-      phone: '9876543210',
-      email: 'owner@demo.coachOS.in',
-      passwordHash: ownerPassword,
-      role: 'owner',
-      permissionsJson: [],
-      status: 'active',
-    },
+  const existingOwner = await prisma.user.findFirst({
+    where: { instituteId: demoInstitute.id, role: 'owner' },
   });
 
-  console.log(`✅ Demo Owner created: ${demoOwner.name} (phone: ${demoOwner.phone}, password: Owner@2026)`);
+  let demoOwner;
+  if (existingOwner) {
+    demoOwner = existingOwner;
+    console.log(`✅ Demo Owner already exists: ${demoOwner.name}`);
+  } else {
+    demoOwner = await prisma.user.create({
+      data: {
+        instituteId: demoInstitute.id,
+        name: 'Rahul Sharma',
+        phone: '9876543210',
+        email: 'owner@demo.coachOS.in',
+        passwordHash: ownerPassword,
+        role: 'owner',
+        permissionsJson: [],
+        status: 'active',
+      },
+    });
+    console.log(`✅ Demo Owner created: ${demoOwner.name} (phone: ${demoOwner.phone}, password: Owner@2026)`);
+  }
 
   console.log('\n🎉 Seed complete! You can now login with:');
   console.log('  Super Admin: admin@vidyaplus.in / Admin@2026');

@@ -10,8 +10,8 @@
 | 2 | Students, Batches & Fee Plans | Student CRUD, batch scheduling, fee plan config | STU-01→05, BATCH-01→04, FEE-01→03 | ✅ Complete |
 | 3 | Attendance System | Mark/view attendance with calendar, locking, stats | ATT-01→04 | ✅ Complete |
 | 4 | Fee Collection & Payments | Auto-generate dues, record payments, receipts | PAY-01→05 | ✅ Complete |
-| 5 | Staff & Delegation Engine | Add staff, custom roles, permission-scoped UI | STAFF-01→05 | 🔲 Next |
-| 6 | Notifications | In-app alerts for fees and attendance | NOTIF-01→03 | 🔲 Pending |
+| 5 | Staff & Delegation Engine | Add staff, custom roles, permission-scoped UI | STAFF-01→05 | ✅ Complete |
+| 6 | Notifications | In-app alerts for fees and attendance | NOTIF-01→03 | 🔲 Next |
 | 7 | Reports & Settings | Financial/attendance analytics, institute config | REPORT-01→02, SET-01→02 | 🔲 Pending |
 
 ---
@@ -79,22 +79,23 @@
 
 ---
 
-### Phase 5: Staff & Delegation Engine 🔲
-**Goal:** Owner can add staff with role-based permissions, staff see scoped UI
+### Phase 5: Staff & Delegation Engine ✅
+**Goal:** Owner can add staff with role-based permissions, staff see scoped UI, and pay salaries
 **Requirements:** STAFF-01, STAFF-02, STAFF-03, STAFF-04, STAFF-05
 **UI hint:** yes
+**Status:** Complete
 **Success Criteria:**
-1. Owner can add teacher/accountant with default permissions
-2. Owner can create custom admin role with any permission combination
-3. Staff login shows only permitted sidebar modules
-4. API endpoints enforce permission checks (e.g., accountant can't mark attendance)
-5. Owner can revoke/modify staff permissions
+1. ✅ Owner can add teacher/accountant with default permissions
+2. ✅ Owner can create custom admin role with any permission combination
+3. ✅ Staff login shows only permitted sidebar modules
+4. ✅ API endpoints enforce permission checks (e.g., accountant can't mark attendance)
+5. ✅ Owner can record staff salary payroll payments
 
 **Plans:**
 - `5.1` — Staff CRUD API (add teacher/accountant/custom with permissions)
 - `5.2` — Staff management UI (add staff form, permission matrix toggle grid)
 - `5.3` — Permission-scoped sidebar and route guards
-- `5.4` — Staff login flow testing
+- `5.4` — Staff payroll management system
 
 ---
 
