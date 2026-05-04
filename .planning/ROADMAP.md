@@ -12,7 +12,7 @@
 | 4 | Fee Collection & Payments | Auto-generate dues, record payments, receipts | PAY-01→05 | ✅ Complete |
 | 5 | Staff & Delegation Engine | Add staff, custom roles, permission-scoped UI | STAFF-01→05 | ✅ Complete |
 | 6 | Notifications | In-app alerts for fees and attendance | NOTIF-01→03 | ✅ Complete |
-| 7 | Reports & Settings | Financial/attendance analytics, institute config | REPORT-01→02, SET-01→02 | 🔲 Next |
+| 7 | Reports & Settings | Financial/attendance analytics, institute config | REPORT-01→02, SET-01→02 | ✅ Complete |
 
 ---
 
@@ -116,7 +116,7 @@
 
 ---
 
-### Phase 7: Reports & Settings 🔲
+### Phase 7: Reports & Settings ✅
 **Goal:** Analytics dashboards and institute configuration
 **Requirements:** REPORT-01, REPORT-02, SET-01, SET-02
 **UI hint:** yes
