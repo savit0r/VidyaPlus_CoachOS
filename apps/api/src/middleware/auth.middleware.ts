@@ -70,8 +70,8 @@ export function requirePermission(...requiredPermissions: string[]) {
       return;
     }
 
-    // Owner and Super Admin bypass permission checks
-    if (req.user.role === 'owner' || req.user.role === 'super_admin') {
+    // Owner, Super Admin, and Teacher bypass permission checks
+    if (req.user.role === 'owner' || req.user.role === 'super_admin' || req.user.role === 'teacher') {
       next();
       return;
     }
