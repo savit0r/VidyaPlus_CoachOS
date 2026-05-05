@@ -1,3 +1,4 @@
+
 import { Request, Response } from 'express';
 import prisma from '../../lib/prisma';
 import logger from '../../lib/logger';
@@ -229,8 +230,8 @@ export const superAdminController = {
 
       res.json({
         success: true,
-        data: { 
-          ...institute, 
+        data: {
+          ...institute,
           users,
           breakdown: {
             roles: Object.fromEntries(roleCounts.map(r => [r.role, r._count]))

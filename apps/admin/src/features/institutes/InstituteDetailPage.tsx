@@ -4,7 +4,7 @@ import api from '../../lib/api';
 import {
   ArrowLeft, Building2, Users, BookOpen, CreditCard, Settings,
   Mail, Phone, MapPin, Calendar, Shield, Loader2, AlertTriangle,
-  CheckCircle2, XCircle, Pencil, Trash2, UserCheck, Zap, UserPlus, TrendingUp,
+  CheckCircle2, XCircle, Pencil, Trash2, UserCheck, Zap, UserPlus, TrendingUp, MoreVertical,
 } from 'lucide-react';
 
 interface InstituteDetail {
