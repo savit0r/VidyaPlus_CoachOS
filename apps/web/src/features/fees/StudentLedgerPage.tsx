@@ -117,8 +117,8 @@ export default function StudentLedgerPage() {
   return (
     <div className="animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 bg-white border border-surface-200 rounded-xl hover:bg-surface-50 text-surface-600 transition-colors">
+      <div className="flex items-center gap-4 mb-8">
+        <button onClick={() => navigate(-1)} className="p-3 bg-white border border-surface-200 rounded-2xl hover:bg-surface-50 text-surface-600 transition-all">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
@@ -129,43 +129,43 @@ export default function StudentLedgerPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-2xl shadow-card border border-surface-100 flex items-center gap-4">
-          <div className="p-4 rounded-xl bg-primary-50 text-primary-600"><FileText className="w-6 h-6" /></div>
+        <div className="bg-white p-6 rounded-3xl shadow-card border border-surface-100 flex items-center gap-4 hover:shadow-premium transition-shadow duration-300">
+          <div className="p-4 rounded-2xl bg-primary-50 text-primary-600"><FileText className="w-6 h-6" /></div>
           <div>
             <p className="text-sm font-medium text-surface-500 mb-1">Total Dues</p>
-            <h3 className="text-2xl font-bold text-surface-900">₹{summary.totalDues.toLocaleString()}</h3>
+            <h3 className="text-3xl font-black text-surface-900">₹{summary.totalDues.toLocaleString()}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-card border border-surface-100 flex items-center gap-4">
-          <div className="p-4 rounded-xl bg-accent-50 text-accent-600"><CheckCircle2 className="w-6 h-6" /></div>
+        <div className="bg-white p-6 rounded-3xl shadow-card border border-surface-100 flex items-center gap-4 hover:shadow-premium transition-shadow duration-300">
+          <div className="p-4 rounded-2xl bg-accent-50 text-accent-600"><CheckCircle2 className="w-6 h-6" /></div>
           <div>
             <p className="text-sm font-medium text-surface-500 mb-1">Total Paid</p>
-            <h3 className="text-2xl font-bold text-surface-900">₹{summary.totalPaid.toLocaleString()}</h3>
+            <h3 className="text-3xl font-black text-surface-900">₹{summary.totalPaid.toLocaleString()}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-card border border-danger-200 flex items-center gap-4">
-          <div className="p-4 rounded-xl bg-danger-50 text-danger-600"><AlertCircle className="w-6 h-6" /></div>
+        <div className="bg-white p-6 rounded-3xl shadow-card border border-danger-200 flex items-center gap-4 hover:shadow-premium transition-shadow duration-300">
+          <div className="p-4 rounded-2xl bg-danger-50 text-danger-600"><AlertCircle className="w-6 h-6" /></div>
           <div>
             <p className="text-sm font-medium text-surface-500 mb-1">Outstanding Balance</p>
-            <h3 className="text-2xl font-bold text-danger-600">₹{summary.balance.toLocaleString()}</h3>
+            <h3 className="text-3xl font-black text-danger-600">₹{summary.balance.toLocaleString()}</h3>
           </div>
         </div>
       </div>
 
       {/* Fee Records */}
-      <div className="bg-white rounded-2xl shadow-card border border-surface-100 overflow-hidden">
-        <div className="px-6 py-5 border-b border-surface-100">
+      <div className="bg-white rounded-3xl shadow-card border border-surface-100 overflow-hidden">
+        <div className="px-6 py-6 border-b border-surface-100">
           <h3 className="font-semibold text-surface-900">Dues & Payments</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-50 border-b border-surface-100 text-xs uppercase tracking-wider text-surface-500 font-medium">
-                <th className="px-6 py-4">Fee Details</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Amount</th>
-                <th className="px-6 py-4 text-right">Balance</th>
-                <th className="px-6 py-4">Action</th>
+              <tr className="bg-surface-50/50 border-b border-surface-100 text-[11px] uppercase tracking-widest text-surface-400 font-bold">
+                <th className="px-6 py-5">Fee Details</th>
+                <th className="px-6 py-5">Status</th>
+                <th className="px-6 py-5">Amount</th>
+                <th className="px-6 py-5 text-right">Balance</th>
+                <th className="px-6 py-5 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-100">
@@ -202,7 +202,7 @@ export default function StudentLedgerPage() {
                     <td className="px-6 py-4 align-top pt-4 text-right">
                       {record.balance > 0 && (
                         <button onClick={() => handlePay(record)}
-                          className="px-4 py-2 bg-primary-50 text-primary-700 text-sm font-medium rounded-xl hover:bg-primary-100 transition-colors flex items-center gap-2 ml-auto">
+                          className="px-5 py-3 bg-primary-50 text-primary-700 text-sm font-bold rounded-2xl hover:bg-primary-100 transition-all flex items-center gap-2 ml-auto active:scale-95">
                           <IndianRupee className="w-4 h-4" /> Collect
                         </button>
                       )}
@@ -218,41 +218,41 @@ export default function StudentLedgerPage() {
       {/* Payment Modal */}
       {showPaymentModal && selectedRecord && (
         <div className="fixed inset-0 z-50 bg-surface-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-up">
-            <div className="px-6 py-4 border-b border-surface-100 flex items-center justify-between">
-              <h3 className="font-bold text-surface-900 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-primary-500" /> Record Payment
+          <div className="bg-white rounded-3xl shadow-modal w-full max-w-md overflow-hidden animate-slide-up">
+            <div className="px-8 py-6 border-b border-surface-100 flex items-center justify-between">
+              <h3 className="font-bold text-surface-900 flex items-center gap-2 text-xl">
+                <CreditCard className="w-6 h-6 text-primary-500" /> Record Payment
               </h3>
-              <button onClick={() => setShowPaymentModal(false)} className="p-2 text-surface-400 hover:text-surface-600 hover:bg-surface-100 rounded-lg">
-                <X className="w-5 h-5" />
+              <button onClick={() => setShowPaymentModal(false)} className="p-2 text-surface-400 hover:text-surface-700 hover:bg-surface-100 rounded-xl transition-all">
+                <X className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="bg-surface-50 p-4 rounded-xl border border-surface-100 mb-4">
-                <p className="text-sm text-surface-500 mb-1">Fee Plan</p>
+            <div className="p-8 space-y-6">
+              <div className="bg-surface-50 p-5 rounded-2xl border border-surface-100 mb-4">
+                <p className="text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Fee Plan</p>
                 <p className="font-medium text-surface-900">{selectedRecord.planName} ({selectedRecord.periodLabel})</p>
-                <div className="flex justify-between mt-3 text-sm">
-                  <span className="text-surface-600">Outstanding Balance:</span>
+                <div className="flex justify-between mt-4 pt-4 border-t border-surface-200/60 text-sm">
+                  <span className="text-surface-600 font-medium">Outstanding Balance:</span>
                   <span className="font-bold text-danger-600">₹{selectedRecord.balance.toLocaleString()}</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-surface-700 mb-1.5">Amount Paying</label>
+                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Amount Paying</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <IndianRupee className="w-4 h-4 text-surface-400" />
+                    <IndianRupee className="w-5 h-5 text-surface-400" />
                   </div>
                   <input type="number" min="1" max={selectedRecord.balance} step="0.01"
                     value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 outline-none" />
+                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-surface-700 mb-1.5">Payment Mode</label>
+                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Payment Mode</label>
                 <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 outline-none">
+                  className="w-full px-5 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all appearance-none cursor-pointer">
                   <option value="cash">Cash</option>
                   <option value="upi">UPI</option>
                   <option value="bank">Bank Transfer / NEFT</option>
@@ -262,20 +262,20 @@ export default function StudentLedgerPage() {
 
               {paymentMode !== 'cash' && (
                 <div>
-                  <label className="block text-sm font-medium text-surface-700 mb-1.5">Reference No. (Txn ID/Cheque No)</label>
+                  <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Reference No.</label>
                   <input type="text" value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 outline-none" 
-                    placeholder="Enter reference number" />
+                    className="w-full px-5 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all" 
+                    placeholder="Txn ID / Cheque No" />
                 </div>
               )}
             </div>
             
-            <div className="px-6 py-4 border-t border-surface-100 bg-surface-50 flex justify-end gap-3">
+            <div className="px-8 py-5 border-t border-surface-100 bg-surface-50/50 flex justify-end gap-3">
               <button onClick={() => setShowPaymentModal(false)}
-                className="px-4 py-2 text-sm font-medium text-surface-600 hover:text-surface-900">Cancel</button>
+                className="px-5 py-3 rounded-2xl text-sm font-bold text-surface-600 hover:bg-surface-100 transition-all">Cancel</button>
               <button onClick={submitPayment} disabled={processing}
-                className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
-                {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} Record Payment
+                className="flex items-center gap-2 px-8 py-3 bg-primary-600 text-white rounded-2xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 shadow-lg shadow-primary-500/25 active:scale-[0.98] transition-all">
+                {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />} Record Payment
               </button>
             </div>
           </div>

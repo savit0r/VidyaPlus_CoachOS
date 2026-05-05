@@ -7,6 +7,8 @@ interface User {
   phone: string;
   email?: string;
   role: string;
+  photoUrl?: string;
+  avatar?: string;
   instituteId?: string;
   instituteName?: string;
   permissions?: string[];
@@ -28,7 +30,7 @@ interface AuthState {
   hasPermission: (permission: string) => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: !!localStorage.getItem('accessToken'),
   isLoading: false,
@@ -116,8 +118,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   clearError: () => set({ error: null }),
 
-  hasPermission: (permission: string) => {
-    const user = useAuthStore.getState().user;
+  hasPermission: (permission: string): boolean => {
+    const user = get().user;
     if (!user) return false;
     if (user.role === 'owner') return true;
     return user.permissions?.includes(permission) || false;

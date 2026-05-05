@@ -131,6 +131,16 @@
 - `7.2` — Report UI (charts, tables, export-ready)
 - `7.3` — Settings page UI (institute profile form, preferences)
 
+### Phase 8: Refactor UI UX to make web app premium, user-friendly, clean, and mobile-friendly
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 8 to break down)
+
 ---
 
 *Last updated: 2026-05-04*

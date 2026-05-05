@@ -42,8 +42,8 @@ export default function FeePlansPage() {
           <p className="text-sm text-surface-500 mt-1">Define fee structures for your students</p>
         </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-white text-sm bg-primary-600 hover:bg-primary-700 transition-all shadow-sm">
-          <Plus className="w-4 h-4" /> Create Fee Plan
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white text-sm bg-primary-600 hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/25 active:scale-[0.98]">
+          <Plus className="w-5 h-5" /> Create Fee Plan
         </button>
       </div>
 
@@ -67,19 +67,19 @@ export default function FeePlansPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {feePlans.map(fp => (
-            <div key={fp.id} className="bg-white rounded-xl shadow-card p-5 hover:shadow-elevated transition-shadow duration-300 border border-surface-100">
+            <div key={fp.id} className="bg-white rounded-3xl shadow-card p-6 hover:shadow-premium transition-shadow duration-300 border border-surface-100">
               <div className="flex items-start justify-between mb-2">
                 <h3 className="font-semibold text-surface-900">{fp.name}</h3>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${FREQUENCY_COLORS[fp.frequency] || 'bg-surface-100 text-surface-600'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${FREQUENCY_COLORS[fp.frequency] || 'bg-surface-100 text-surface-600'}`}>
                   {FREQUENCY_LABELS[fp.frequency] || fp.frequency}
                 </span>
               </div>
 
-              <p className="text-2xl font-bold text-surface-900 mb-1">
+              <p className="text-3xl font-black text-surface-900 mb-1">
                 ₹{Number(fp.amount).toLocaleString()}
-                <span className="text-sm font-normal text-surface-400">/{fp.frequency}</span>
+                <span className="text-sm font-medium text-surface-400">/{fp.frequency}</span>
               </p>
 
               {fp.description && <p className="text-sm text-surface-500 mb-3">{fp.description}</p>}
@@ -129,32 +129,32 @@ function CreateFeePlanModal({ onClose, onCreated }: { onClose: () => void; onCre
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-modal p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-surface-900">Create Fee Plan</h2>
-          <button onClick={onClose} className="p-2 rounded-lg text-surface-400 hover:text-surface-600 hover:bg-surface-100"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-modal p-8 animate-fade-in" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-surface-900">Create Fee Plan</h2>
+          <button onClick={onClose} className="p-2 rounded-xl text-surface-400 hover:text-surface-700 hover:bg-surface-100"><X className="w-6 h-6" /></button>
         </div>
 
         {error && <div className="mb-4 px-4 py-3 bg-danger-50 border border-danger-200 rounded-xl text-danger-600 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4" />{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Plan Name *</label>
+            <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Plan Name *</label>
             <input name="name" value={form.name} onChange={handleChange} required placeholder="e.g. Monthly Tuition"
-              className="w-full px-3 py-2.5 bg-white border border-surface-200 rounded-xl text-surface-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 shadow-sm" />
+              className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Amount (₹) *</label>
+              <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Amount (₹) *</label>
               <input name="amount" type="number" value={form.amount} onChange={handleChange} required placeholder="2500" min="0" step="0.01"
-                className="w-full px-3 py-2.5 bg-white border border-surface-200 rounded-xl text-surface-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 shadow-sm" />
+                className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Frequency *</label>
+              <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Frequency *</label>
               <select name="frequency" value={form.frequency} onChange={handleChange}
-                className="w-full px-3 py-2.5 bg-white border border-surface-200 rounded-xl text-surface-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 shadow-sm">
+                className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-700 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all appearance-none cursor-pointer">
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
                 <option value="course">One-time Course</option>
@@ -165,23 +165,23 @@ function CreateFeePlanModal({ onClose, onCreated }: { onClose: () => void; onCre
 
           {(form.frequency === 'monthly' || form.frequency === 'quarterly') && (
             <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Due Day of Month</label>
+              <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Due Day of Month</label>
               <input name="dueDay" type="number" value={form.dueDay} onChange={handleChange} min="1" max="31"
-                className="w-full px-3 py-2.5 bg-white border border-surface-200 rounded-xl text-surface-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 shadow-sm" />
+                className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all" />
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Description</label>
+            <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Description</label>
             <textarea name="description" value={form.description} onChange={handleChange} rows={2} placeholder="Optional description..."
-              className="w-full px-3 py-2.5 bg-white border border-surface-200 rounded-xl text-surface-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 shadow-sm resize-none" />
+              className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none" />
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-xl text-sm font-medium text-surface-600 hover:bg-surface-100">Cancel</button>
+          <div className="flex justify-end gap-3 pt-4 border-t border-surface-100 mt-6">
+            <button type="button" onClick={onClose} className="px-5 py-3 rounded-2xl text-sm font-bold text-surface-600 hover:bg-surface-100 transition-all">Cancel</button>
             <button type="submit" disabled={loading}
-              className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2 shadow-sm">
-              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</> : <><CheckCircle2 className="w-4 h-4" /> Create Plan</>}
+              className="px-8 py-3 rounded-2xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-primary-500/25 active:scale-[0.98]">
+              {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Creating...</> : <><CheckCircle2 className="w-5 h-5" /> Create Plan</>}
             </button>
           </div>
         </form>

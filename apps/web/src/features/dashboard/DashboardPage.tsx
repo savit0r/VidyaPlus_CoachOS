@@ -1,30 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../stores/auth.store';
 import api from '../../lib/api';
 import {
   Users, CalendarCheck, IndianRupee, BookOpen,
-  Clock, AlertTriangle, ArrowRight, Loader2, Plus, Sparkles
+  AlertTriangle, ArrowRight, Loader2,
+  UserPlus, ClipboardList, Receipt, TrendingUp
 } from 'lucide-react';
-
-function StatCard({ title, value, icon: Icon, color, subtitle }: {
-  title: string; value: string | number; icon: any; color: string; subtitle?: string;
-}) {
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-surface-100 hover:shadow-card transition-all duration-300 animate-fade-in flex items-center justify-between">
-      <div>
-        <p className="text-sm text-surface-500 font-medium">{title}</p>
-        <p className="text-2xl font-bold text-surface-900 mt-1">{value}</p>
-        {subtitle && <p className="text-xs text-surface-400 mt-1">{subtitle}</p>}
-      </div>
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-        <Icon className="w-5 h-5 text-white" />
-      </div>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalStudents: 0,
@@ -66,101 +52,179 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+          <p className="text-sm font-medium text-slate-500">Loading Command Center...</p>
+        </div>
       </div>
     );
   }
 
+  const greeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
   return (
-    <div className="animate-fade-in max-w-7xl mx-auto space-y-8">
-      {/* Welcome Banner */}
-      <div className="relative p-6 bg-gradient-to-r from-primary-600 to-indigo-600 rounded-3xl text-white shadow-lg overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 opacity-10 pointer-events-none">
-          <Sparkles className="w-64 h-64 -rotate-12" />
+    <div className="space-y-6 lg:space-y-10 pb-6">
+      {/* Welcome Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl lg:text-2xl font-bold text-slate-900 tracking-tight">
+            {greeting()}, {user?.name?.split(' ')[0] || 'Rahul'} 👋
+          </h2>
+          <p className="text-slate-500 text-xs lg:text-sm mt-1">Snapshot of your institute's performance.</p>
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold">Good Day, Operational Hub</h2>
-        <p className="text-sm text-indigo-100 mt-1.5 max-w-md">Manage your institute seamlessly with live enrollment tracking and collected fee analytics.</p>
+        <button 
+          onClick={fetchDashboardData}
+          className="btn-secondary hidden sm:flex"
+        >
+          Refresh Data
+        </button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Students" value={stats.totalStudents} icon={Users} color="bg-primary-600" subtitle="Enrolled profiles" />
-        <StatCard title="Total Batches" value={stats.totalBatches} icon={BookOpen} color="bg-indigo-600" subtitle="Academic cohorts" />
-        <StatCard title="Collected Fees" value={`₹${stats.totalCollected.toLocaleString()}`} icon={IndianRupee} color="bg-accent-600" subtitle="Payments received" />
-        <StatCard title="Pending Dues" value={`₹${stats.totalOutstanding.toLocaleString()}`} icon={AlertTriangle} color="bg-danger-600" subtitle="Awaiting payout" />
+      {/* Stats Grid - 2x2 on small, 4-col on large */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+        {[
+          {
+            title: 'Students',
+            value: stats.totalStudents,
+            icon: Users,
+            color: 'text-blue-600',
+            bg: 'bg-blue-50',
+            trend: 'Active'
+          },
+          {
+            title: 'Batches',
+            value: stats.totalBatches,
+            icon: BookOpen,
+            color: 'text-indigo-600',
+            bg: 'bg-indigo-50',
+            trend: 'Running'
+          },
+          {
+            title: 'Collected',
+            value: `₹${(stats.totalCollected / 1000).toFixed(1)}k`,
+            icon: IndianRupee,
+            color: 'text-emerald-600',
+            bg: 'bg-emerald-50',
+            trend: 'Revenue'
+          },
+          {
+            title: 'Dues',
+            value: `₹${(stats.totalOutstanding / 1000).toFixed(1)}k`,
+            icon: AlertTriangle,
+            color: 'text-rose-600',
+            bg: 'bg-rose-50',
+            trend: 'Pending',
+            critical: true
+          },
+        ].map((stat) => (
+          <div
+            key={stat.title}
+            className={`premium-card p-4 lg:p-6 flex flex-col group ${stat.critical ? 'hover:border-rose-200' : 'hover:border-primary-200'}`}
+          >
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
+                <stat.icon className="w-5 h-5 lg:w-6 lg:h-6" />
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] lg:text-sm font-medium text-slate-500 mb-0.5 lg:mb-1">{stat.title}</p>
+              <h3 className="text-lg lg:text-2xl font-bold text-slate-900">{stat.value}</h3>
+              <p className={`text-[9px] lg:text-[10px] font-bold uppercase tracking-wider mt-2 lg:mt-3 ${stat.critical ? 'text-rose-600' : 'text-slate-400'}`}>
+                {stat.trend}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Grid: Actions and Upcoming Classes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <div className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
-          <h3 className="font-bold text-surface-900 mb-5 flex items-center justify-between">
-            <span>Quick Actions</span>
-            <span className="w-2 h-2 bg-primary-500 rounded-full" />
-          </h3>
-          <div className="space-y-3">
-            {[
-              { icon: Users, label: 'Manage Students', color: 'text-primary-600 bg-primary-50', path: '/students' },
-              { icon: BookOpen, label: 'Manage Batches', color: 'text-indigo-600 bg-indigo-50', path: '/batches' },
-              { icon: CalendarCheck, label: 'Mark Attendance', color: 'text-purple-600 bg-purple-50', path: '/attendance' },
-              { icon: IndianRupee, label: 'Fees Management', color: 'text-accent-600 bg-accent-50', path: '/fees' },
-            ].map(({ icon: Icon, label, color, path }) => (
-              <button
-                key={label}
-                onClick={() => navigate(path)}
-                className="w-full flex items-center justify-between p-3.5 bg-surface-50/50 hover:bg-surface-50 border border-surface-100 rounded-xl transition-all group hover:border-surface-200 text-left"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-                    <Icon className="w-5 h-5" />
+      {/* Quick Actions - 2 Column Grid on Mobile */}
+      <div className="space-y-4 lg:space-y-6">
+        <h3 className="text-base lg:text-lg font-bold text-slate-900">Quick Command</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+          {[
+            { icon: UserPlus, label: 'New Student', path: '/students', color: 'text-blue-600', bg: 'bg-blue-50' },
+            { icon: BookOpen, label: 'Batches', path: '/batches', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+            { icon: CalendarCheck, label: 'Attendance', path: '/attendance', color: 'text-purple-600', bg: 'bg-purple-50' },
+            { icon: Receipt, label: 'Fees', path: '/fees', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          ].map(({ icon: Icon, label, path, color, bg }) => (
+            <button
+              key={label}
+              onClick={() => navigate(path)}
+              className="premium-card p-4 flex flex-col items-center justify-center gap-3 group text-center active:scale-95 transition-all"
+            >
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${bg} ${color} group-hover:scale-110 transition-transform`}>
+                <Icon className="w-6 h-6" />
+              </div>
+              <span className="block text-xs lg:text-sm font-bold text-slate-900">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Secondary Content Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        {/* Institute Health Overview */}
+        <div className="lg:col-span-12 space-y-4 lg:space-y-6">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-base lg:text-lg font-bold text-slate-900">Institute Health</h3>
+            <button
+              onClick={() => navigate('/reports')}
+              className="text-xs lg:text-sm font-bold text-primary-600 hover:text-primary-700 flex items-center gap-1.5 transition-colors"
+            >
+              All Reports <TrendingUp className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="premium-card overflow-hidden">
+            <div className="p-5 lg:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-12">
+              <div className="space-y-5 lg:space-y-8">
+                <div>
+                  <p className="text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Academic Status</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl lg:text-4xl font-black text-slate-900">{stats.totalStudents}</span>
+                    <span className="text-xs lg:text-sm font-medium text-slate-500">Active Students</span>
                   </div>
-                  <span className="text-sm font-semibold text-surface-700">{label}</span>
+                  <div className="w-full h-2 bg-slate-100 rounded-full mt-3 lg:mt-4">
+                    <div className="h-full bg-blue-500 rounded-full w-[85%]" />
+                  </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity translate-x-0 group-hover:translate-x-1" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Dynamic Class Status or Recent Enrollees */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-surface-100 p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold text-surface-900">Institute Summary</h3>
-              <button onClick={() => navigate('/reports')} className="text-xs text-primary-600 font-semibold hover:underline flex items-center gap-1">
-                View Reports <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-surface-50/60 border border-surface-100 rounded-2xl flex items-start justify-between">
+                
                 <div>
-                  <p className="text-xs text-surface-500 font-medium">Enrolled Students</p>
-                  <p className="text-lg font-bold text-surface-800 mt-0.5">{stats.totalStudents} Active</p>
-                </div>
-                <div className="p-2 bg-primary-100 text-primary-600 rounded-xl">
-                  <Users className="w-4 h-4" />
+                  <p className="text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Live Batches</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl lg:text-4xl font-black text-slate-900">{stats.totalBatches}</span>
+                    <span className="text-xs lg:text-sm font-medium text-slate-500">Ongoing cohorts</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-surface-50/60 border border-surface-100 rounded-2xl flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-surface-500 font-medium">Ongoing Batches</p>
-                  <p className="text-lg font-bold text-surface-800 mt-0.5">{stats.totalBatches} Cohorts</p>
+              <div className="space-y-5 lg:space-y-8">
+                <div className="p-4 lg:p-6 rounded-2xl bg-slate-50 border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 lg:mb-4">Revenue Health</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm lg:text-lg font-bold text-emerald-600">₹{stats.totalCollected.toLocaleString('en-IN')}</p>
+                      <p className="text-[10px] text-slate-500 font-medium italic mt-0.5">Collected</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm lg:text-lg font-bold text-rose-500">₹{stats.totalOutstanding.toLocaleString('en-IN')}</p>
+                      <p className="text-[10px] text-slate-500 font-medium italic mt-0.5">Pending</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
-                  <BookOpen className="w-4 h-4" />
+
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                   <span className="text-[11px] font-bold uppercase tracking-wider">Cloud Systems Active</span>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="mt-6 pt-5 border-t border-surface-100 flex items-center justify-between">
-            <span className="text-xs font-medium text-surface-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 bg-accent-500 rounded-full inline-block animate-pulse" /> Live server connection
-            </span>
-            <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-1 rounded-lg">Operational Dashboard</span>
           </div>
         </div>
       </div>

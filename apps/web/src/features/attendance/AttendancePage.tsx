@@ -155,23 +155,23 @@ export default function AttendancePage() {
         {/* Left Column — Marking Panel */}
         <div className="lg:col-span-2 space-y-4">
           {/* Batch + Date Selectors */}
-          <div className="bg-white rounded-xl shadow-card p-4">
+          <div className="bg-white rounded-3xl shadow-card p-6 border border-surface-100">
             <div className="flex gap-4 items-end">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-surface-600 mb-1.5">Batch</label>
+                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Batch</label>
                 <select value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-surface-200 rounded-xl text-surface-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 shadow-sm">
+                  className="w-full px-4 py-3 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all appearance-none cursor-pointer">
                   {batches.length === 0 && <option>No batches found</option>}
                   {batches.map(b => <option key={b.id} value={b.id}>{b.name} {b.subject ? `(${b.subject})` : ''}</option>)}
                 </select>
               </div>
-              <div className="w-44">
-                <label className="block text-sm font-medium text-surface-600 mb-1.5">Date</label>
+              <div className="w-48">
+                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Date</label>
                 <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-surface-200 rounded-xl text-surface-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 shadow-sm" />
+                  className="w-full px-4 py-3 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all" />
               </div>
               <button onClick={markAllPresent}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 transition-all whitespace-nowrap">
+                className="px-6 py-3 rounded-2xl text-sm font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 transition-all whitespace-nowrap active:scale-95">
                 Mark All Present
               </button>
             </div>
@@ -179,7 +179,7 @@ export default function AttendancePage() {
 
           {/* Summary Bar */}
           {summary && !loading && (
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               {[
                 { label: 'Total', value: summary.total, color: 'bg-surface-100 text-surface-600' },
                 { label: 'Present', value: summary.present, color: 'bg-accent-50 text-accent-600' },
@@ -187,16 +187,16 @@ export default function AttendancePage() {
                 { label: 'Late', value: summary.late, color: 'bg-warn-50 text-warn-600' },
                 { label: 'Unmarked', value: summary.unmarked, color: 'bg-surface-50 text-surface-500' },
               ].map(s => (
-                <div key={s.label} className={`flex-1 rounded-xl px-3 py-2 text-center ${s.color}`}>
-                  <p className="text-lg font-bold">{s.value}</p>
-                  <p className="text-xs">{s.label}</p>
+                <div key={s.label} className={`flex-1 rounded-2xl px-4 py-3 text-center ${s.color}`}>
+                  <p className="text-2xl font-bold">{s.value}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest opacity-80">{s.label}</p>
                 </div>
               ))}
             </div>
           )}
 
           {/* Student List */}
-          <div className="bg-white rounded-xl shadow-card overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-card border border-surface-100 overflow-hidden">
             {loading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-6 h-6 text-primary-500 animate-spin" />
@@ -210,7 +210,7 @@ export default function AttendancePage() {
             ) : (
               <>
                 {isAllLocked && (
-                  <div className="flex items-center gap-2 px-5 py-3 bg-warn-50 border-b border-warn-200 text-warn-600 text-sm">
+                  <div className="flex items-center gap-2 px-6 py-4 bg-warn-50 border-b border-warn-200 text-warn-600 text-sm font-medium">
                     <Lock className="w-4 h-4" /> Attendance is locked for this date
                   </div>
                 )}
@@ -220,28 +220,28 @@ export default function AttendancePage() {
                     const config = currentStatus ? STATUS_CONFIG[currentStatus as keyof typeof STATUS_CONFIG] : null;
                     return (
                       <div key={student.userId}
-                        className={`flex items-center justify-between px-5 py-3 transition-colors ${currentStatus ? 'bg-surface-50/50' : ''}`}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-sm font-semibold">
+                        className={`flex items-center justify-between px-6 py-4 transition-colors ${currentStatus ? 'bg-surface-50/50' : ''}`}>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-sm font-bold">
                             {student.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-surface-900">{student.name}</p>
-                            <p className="text-xs text-surface-400">{student.studentCode}</p>
+                            <p className="text-sm font-bold text-surface-900">{student.name}</p>
+                            <p className="text-xs text-surface-500 mt-0.5">{student.studentCode}</p>
                           </div>
                         </div>
 
                         {/* Status Toggle Buttons */}
                         <div className="flex items-center gap-2">
-                          {student.isLocked && <Lock className="w-3.5 h-3.5 text-surface-400" />}
+                          {student.isLocked && <Lock className="w-4 h-4 text-surface-400 mr-1" />}
                           {(['present', 'absent', 'late'] as const).map(status => {
                             const sc = STATUS_CONFIG[status];
                             const isActive = currentStatus === status;
                             return (
                               <button key={status} onClick={() => !student.isLocked && setAttendance(prev => ({ ...prev, [student.userId]: status }))}
                                 disabled={student.isLocked}
-                                className={`w-10 h-10 rounded-xl text-xs font-bold transition-all ${
-                                  isActive ? sc.color : 'bg-surface-100 text-surface-400 hover:bg-surface-200'
+                                className={`w-11 h-11 rounded-2xl text-xs font-bold transition-all shadow-sm ${
+                                  isActive ? `${sc.color} ring-2 ${sc.ring} ring-offset-2 scale-105` : 'bg-surface-100 text-surface-400 hover:bg-surface-200 active:scale-95'
                                 } ${student.isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                 title={status.charAt(0).toUpperCase() + status.slice(1)}>
                                 {sc.label}
@@ -255,13 +255,13 @@ export default function AttendancePage() {
                 </div>
 
                 {/* Save Button */}
-                <div className="px-5 py-4 border-t border-surface-200 bg-surface-50 flex items-center justify-between">
-                  <p className="text-sm text-surface-500">{markedCount}/{students.length} marked</p>
-                  <div className="flex items-center gap-3">
-                    {saved && <span className="text-sm text-accent-500 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Saved!</span>}
+                <div className="px-6 py-5 border-t border-surface-100 bg-surface-50/50 flex items-center justify-between">
+                  <p className="text-sm font-medium text-surface-500">{markedCount}/{students.length} marked</p>
+                  <div className="flex items-center gap-4">
+                    {saved && <span className="text-sm font-bold text-accent-600 flex items-center gap-1.5"><CheckCircle2 className="w-5 h-5" /> Saved!</span>}
                     <button onClick={handleSave} disabled={saving || markedCount === 0 || isAllLocked}
-                      className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2 shadow-sm transition-all">
-                      {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><CheckCircle2 className="w-4 h-4" /> Save Attendance</>}
+                      className="px-8 py-3 rounded-2xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-primary-500/25 active:scale-[0.98] transition-all">
+                      {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><CheckCircle2 className="w-5 h-5" /> Save Attendance</>}
                     </button>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export default function AttendancePage() {
 
         {/* Right Column — Calendar Heatmap */}
         <div className="space-y-4">
-          <div className="bg-white rounded-xl shadow-card p-5">
+          <div className="bg-white rounded-3xl shadow-card p-6 border border-surface-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-surface-900">Calendar</h3>
               <div className="flex items-center gap-1">

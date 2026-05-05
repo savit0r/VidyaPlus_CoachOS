@@ -111,21 +111,21 @@ export default function StaffPage() {
           <h1 className="text-2xl font-bold text-surface-900">Staff Management</h1>
           <p className="text-sm text-surface-500 mt-1">Manage team roles, permissions, and salary payroll</p>
         </div>
-        <div className="flex gap-3">
-          <div className="flex rounded-xl p-1 bg-surface-100 border border-surface-200">
+        <div className="flex gap-4">
+          <div className="flex rounded-2xl p-1.5 bg-surface-100 border border-surface-200">
             <button onClick={() => setViewMode('staff')}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${viewMode === 'staff' ? 'bg-white text-surface-900 shadow-sm' : 'text-surface-500 hover:text-surface-800'}`}>
+              className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${viewMode === 'staff' ? 'bg-white text-surface-900 shadow-sm' : 'text-surface-500 hover:text-surface-800'}`}>
               Staff Registry
             </button>
             <button onClick={() => setViewMode('payroll')}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${viewMode === 'payroll' ? 'bg-white text-surface-900 shadow-sm' : 'text-surface-500 hover:text-surface-800'}`}>
+              className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${viewMode === 'payroll' ? 'bg-white text-surface-900 shadow-sm' : 'text-surface-500 hover:text-surface-800'}`}>
               Payroll & History
             </button>
           </div>
           {viewMode === 'staff' && (
             <button onClick={handleOpenAdd}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors shadow-sm">
-              <UserPlus className="w-4 h-4" /> Add New Staff
+              className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-2xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/25 active:scale-[0.98]">
+              <UserPlus className="w-5 h-5" /> Add New Staff
             </button>
           )}
         </div>
@@ -138,17 +138,17 @@ export default function StaffPage() {
       )}
 
       {!loading && viewMode === 'staff' && (
-        <div className="bg-white rounded-2xl shadow-card border border-surface-100 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-card border border-surface-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-50 border-b border-surface-100 text-xs uppercase tracking-wider text-surface-500 font-medium">
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Contact</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Base Salary</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4"></th>
+                <tr className="bg-surface-50/50 border-b border-surface-100 text-[11px] uppercase tracking-widest text-surface-400 font-bold">
+                  <th className="px-6 py-5">Name</th>
+                  <th className="px-6 py-5">Contact</th>
+                  <th className="px-6 py-5">Role</th>
+                  <th className="px-6 py-5">Base Salary</th>
+                  <th className="px-6 py-5">Status</th>
+                  <th className="px-6 py-5"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-100">
@@ -204,16 +204,16 @@ export default function StaffPage() {
       )}
 
       {!loading && viewMode === 'payroll' && (
-        <div className="bg-white rounded-2xl shadow-card border border-surface-100 overflow-hidden animate-fade-in">
+        <div className="bg-white rounded-3xl shadow-card border border-surface-100 overflow-hidden animate-fade-in">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-50 border-b border-surface-100 text-xs uppercase tracking-wider text-surface-500 font-medium">
-                  <th className="px-6 py-4">Staff Member</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Month/Year</th>
-                  <th className="px-6 py-4">Amount Paid</th>
-                  <th className="px-6 py-4">Method & Date</th>
+                <tr className="bg-surface-50/50 border-b border-surface-100 text-[11px] uppercase tracking-widest text-surface-400 font-bold">
+                  <th className="px-6 py-5">Staff Member</th>
+                  <th className="px-6 py-5">Role</th>
+                  <th className="px-6 py-5">Month/Year</th>
+                  <th className="px-6 py-5">Amount Paid</th>
+                  <th className="px-6 py-5">Method & Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-100">

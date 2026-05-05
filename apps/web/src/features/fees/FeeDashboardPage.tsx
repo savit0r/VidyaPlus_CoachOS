@@ -81,8 +81,8 @@ export default function FeeDashboardPage() {
         </div>
         <div className="flex gap-3">
           <button onClick={handleGenerateDues} disabled={generating}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 shadow-sm">
-            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-2xl text-sm font-bold hover:bg-primary-700 transition-all disabled:opacity-50 shadow-lg shadow-primary-500/25 active:scale-[0.98]">
+            {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
             Generate Monthly Dues
           </button>
         </div>
@@ -97,8 +97,8 @@ export default function FeeDashboardPage() {
             { label: 'Overdue Amount', value: `₹${kpis.totalOverdueAmount.toLocaleString()}`, icon: AlertCircle, color: 'text-danger-600', bg: 'bg-danger-50' },
             { label: 'Total Expected', value: `₹${kpis.totalDues.toLocaleString()}`, icon: DollarSign, color: 'text-primary-600', bg: 'bg-primary-50' },
           ].map((stat, i) => (
-            <div key={i} className="bg-white p-6 rounded-2xl shadow-card border border-surface-100 flex items-center gap-4">
-              <div className={`p-4 rounded-xl ${stat.bg} ${stat.color}`}>
+            <div key={i} className="bg-white p-6 rounded-3xl shadow-card border border-surface-100 flex items-center gap-4 hover:shadow-premium transition-shadow duration-300">
+              <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color}`}>
                 <stat.icon className="w-6 h-6" />
               </div>
               <div>
@@ -113,8 +113,8 @@ export default function FeeDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Overdue List */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl shadow-card border border-surface-100 overflow-hidden">
-            <div className="px-6 py-5 border-b border-surface-100 flex items-center justify-between">
+          <div className="bg-white rounded-3xl shadow-card border border-surface-100 overflow-hidden">
+            <div className="px-6 py-6 border-b border-surface-100 flex items-center justify-between">
               <div className="flex items-center gap-2 text-danger-600 font-semibold">
                 <AlertCircle className="w-5 h-5" />
                 <h3>Overdue Payments</h3>
@@ -125,12 +125,12 @@ export default function FeeDashboardPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-surface-50 border-b border-surface-100 text-xs uppercase tracking-wider text-surface-500 font-medium">
-                    <th className="px-6 py-4">Student</th>
-                    <th className="px-6 py-4">Fee Plan</th>
-                    <th className="px-6 py-4">Due Date</th>
-                    <th className="px-6 py-4 text-right">Balance</th>
-                    <th className="px-6 py-4"></th>
+                  <tr className="bg-surface-50/50 border-b border-surface-100 text-[11px] uppercase tracking-widest text-surface-400 font-bold">
+                    <th className="px-6 py-5">Student</th>
+                    <th className="px-6 py-5">Fee Plan</th>
+                    <th className="px-6 py-5">Due Date</th>
+                    <th className="px-6 py-5 text-right">Balance</th>
+                    <th className="px-6 py-5"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-100">
@@ -169,20 +169,20 @@ export default function FeeDashboardPage() {
 
         {/* Quick Actions / Activity */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-card border border-surface-100 p-6">
-            <h3 className="font-semibold text-surface-900 mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-3xl shadow-card border border-surface-100 p-8">
+            <h3 className="font-semibold text-surface-900 mb-6 flex items-center gap-2">
               <FileText className="w-5 h-5 text-primary-500" />
               Quick Actions
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button onClick={() => navigate('/students')}
-                className="w-full text-left px-4 py-3 rounded-xl border border-surface-200 hover:border-primary-300 hover:bg-primary-50 transition-all group">
-                <p className="font-medium text-surface-900 group-hover:text-primary-700">Find Student Ledger</p>
+                className="w-full text-left px-5 py-4 rounded-2xl border border-surface-200 hover:border-primary-300 hover:bg-primary-50 transition-all group">
+                <p className="font-bold text-surface-900 group-hover:text-primary-700">Find Student Ledger</p>
                 <p className="text-xs text-surface-500 mt-1">Search student to collect fee</p>
               </button>
               <button onClick={() => navigate('/fees/plans')}
-                className="w-full text-left px-4 py-3 rounded-xl border border-surface-200 hover:border-primary-300 hover:bg-primary-50 transition-all group">
-                <p className="font-medium text-surface-900 group-hover:text-primary-700">Manage Fee Plans</p>
+                className="w-full text-left px-5 py-4 rounded-2xl border border-surface-200 hover:border-primary-300 hover:bg-primary-50 transition-all group">
+                <p className="font-bold text-surface-900 group-hover:text-primary-700">Manage Fee Plans</p>
                 <p className="text-xs text-surface-500 mt-1">Create or edit fee structures</p>
               </button>
             </div>
