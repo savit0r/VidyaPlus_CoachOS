@@ -15,6 +15,8 @@ router.post('/impersonate/:userId', superAdminController.impersonate);
 // Institute CRUD
 router.get('/institutes', superAdminController.listInstitutes);
 router.get('/institutes/:id', superAdminController.getInstitute);
+router.get('/institutes/:id/audit-logs', superAdminController.getInstituteAuditLogs);
+router.get('/institutes/:id/payments', superAdminController.getInstitutePayments);
 router.post('/institutes', superAdminController.createInstitute);
 router.patch('/institutes/:id', superAdminController.updateInstitute);
 router.delete('/institutes/:id', superAdminController.deleteInstitute);

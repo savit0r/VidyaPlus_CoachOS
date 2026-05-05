@@ -213,6 +213,13 @@ export const superAdminController = {
         return;
       }
 
+      // Get user counts by role
+      const roleCounts = await prisma.user.groupBy({
+        by: ['role'],
+        where: { instituteId: id, deletedAt: null },
+        _count: true,
+      });
+
       // Get owner and staff
       const users = await prisma.user.findMany({
         where: { instituteId: id, deletedAt: null },
@@ -222,11 +229,68 @@ export const superAdminController = {
 
       res.json({
         success: true,
-        data: { ...institute, users },
+        data: { 
+          ...institute, 
+          users,
+          breakdown: {
+            roles: Object.fromEntries(roleCounts.map(r => [r.role, r._count]))
+          }
+        },
       });
     } catch (error: any) {
       logger.error('Failed to get institute', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to get institute' });
+    }
+  },
+
+  // ---------- Get Institute Audit Logs ----------
+  async getInstituteAuditLogs(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const skip = (page - 1) * limit;
+
+      const [logs, total] = await Promise.all([
+        prisma.auditLog.findMany({
+          where: { instituteId: id },
+          include: { user: { select: { name: true, role: true } } },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.auditLog.count({ where: { instituteId: id } }),
+      ]);
+
+      res.json({
+        success: true,
+        data: logs,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+      });
+    } catch (error: any) {
+      logger.error('Failed to get institute audit logs', { error: error.message });
+      res.status(500).json({ success: false, error: 'Failed to get logs' });
+    }
+  },
+
+  // ---------- Get Institute Payments ----------
+  async getInstitutePayments(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const payments = await prisma.payment.findMany({
+        where: { instituteId: id },
+        include: {
+          feeRecord: { include: { feePlan: { select: { name: true } } } },
+          recorder: { select: { name: true } },
+        },
+        orderBy: { paidAt: 'desc' },
+      });
+
+      res.json({ success: true, data: payments });
+    } catch (error: any) {
+      logger.error('Failed to get institute payments', { error: error.message });
+      res.status(500).json({ success: false, error: 'Failed to get payments' });
     }
   },
 
