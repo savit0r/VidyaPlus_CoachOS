@@ -48,7 +48,7 @@ export const superAdminController = {
   // ---------- Platform KPIs ----------
   async getKpis(_req: Request, res: Response) {
     try {
-      const [totalInstitutes, activeInstitutes, totalUsers, totalStudents, expiringPlans] = await Promise.all([
+      const [totalInstitutes, activeInstitutes, totalUsers, totalStudents, expiringPlans, revenueResult] = await Promise.all([
         prisma.institute.count(),
         prisma.institute.count({ where: { status: 'active' } }),
         prisma.user.count({ where: { deletedAt: null } }),
@@ -56,9 +56,13 @@ export const superAdminController = {
         prisma.institute.count({
           where: {
             status: 'active',
-            // For now, just count all active — when subscription tracking is added, filter by expiry
+            // In a real app, filter by plan expiry date
           },
         }),
+        prisma.payment.aggregate({
+          where: { status: 'completed' },
+          _sum: { amount: true }
+        })
       ]);
 
       res.json({
@@ -70,11 +74,64 @@ export const superAdminController = {
           totalUsers,
           totalStudents,
           expiringPlans,
+          totalRevenue: Number(revenueResult._sum.amount || 0),
         },
       });
     } catch (error: any) {
       logger.error('Failed to fetch KPIs', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to fetch platform KPIs' });
+    }
+  },
+
+  // ---------- Impersonate Owner ----------
+  async impersonate(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+
+      const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { institute: true }
+      });
+
+      if (!targetUser || !targetUser.instituteId) {
+        res.status(404).json({ success: false, error: 'Target owner not found' });
+        return;
+      }
+
+      // Generate tokens for the target user
+      const tokens = await authService.generateTokens(targetUser);
+
+      // Audit log the impersonation
+      await prisma.auditLog.create({
+        data: {
+          userId: req.user!.userId,
+          action: 'admin.impersonate',
+          entityType: 'user',
+          entityId: userId,
+          afterJson: { impersonatedUser: targetUser.email, institute: targetUser.institute?.name },
+          ipAddress: req.ip,
+        },
+      });
+
+      logger.warn(`Admin ${req.user!.userId} is impersonating ${targetUser.email}`);
+
+      res.json({
+        success: true,
+        data: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          user: {
+            id: targetUser.id,
+            name: targetUser.name,
+            email: targetUser.email,
+            role: targetUser.role,
+            instituteId: targetUser.instituteId,
+          }
+        }
+      });
+    } catch (error: any) {
+      logger.error('Impersonation failed', { error: error.message });
+      res.status(500).json({ success: false, error: 'Impersonation failed' });
     }
   },
 

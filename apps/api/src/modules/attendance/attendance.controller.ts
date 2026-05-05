@@ -262,7 +262,9 @@ export const attendanceController = {
   async getByStudent(req: Request, res: Response) {
     try {
       const instituteId = req.user!.instituteId!;
-      const { studentId } = req.params;
+      const studentId = (req.params.studentId === 'me' || !req.params.studentId) 
+        ? req.user!.userId 
+        : req.params.studentId;
       const days = parseInt(req.query.days as string) || 30;
 
       const since = new Date();

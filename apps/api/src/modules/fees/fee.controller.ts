@@ -277,7 +277,18 @@ export const feeController = {
   async getStudentLedger(req: Request, res: Response) {
     try {
       const instituteId = req.user!.instituteId!;
-      const { studentId } = req.params;
+      let studentId = req.params.studentId;
+
+      if (!studentId || studentId === 'me') {
+        const profile = await prisma.studentProfile.findUnique({
+          where: { userId: req.user!.userId }
+        });
+        if (!profile) {
+          res.status(404).json({ success: false, error: 'Student profile not found' });
+          return;
+        }
+        studentId = profile.id;
+      }
 
       const recordsRaw = await prisma.feeRecord.findMany({
         where: { instituteId, studentId },

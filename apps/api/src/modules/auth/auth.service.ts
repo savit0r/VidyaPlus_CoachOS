@@ -19,7 +19,7 @@ function generateOtp(): string {
  */
 function generateAccessToken(payload: JwtPayload): string {
   return jwt.sign(payload, process.env.JWT_ACCESS_SECRET!, {
-    expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+    expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as any,
   });
 }
 
@@ -31,6 +31,36 @@ function generateRefreshToken(): string {
 }
 
 export const authService = {
+  /**
+   * Generate tokens for a user (used by login and impersonation)
+   */
+  async generateTokens(user: any) {
+    const permissions = (user.permissionsJson as any[])?.length > 0
+      ? (user.permissionsJson as any[])
+      : (DEFAULT_ROLE_PERMISSIONS[user.role] || []);
+
+    const jwtPayload: JwtPayload = {
+      userId: user.id,
+      instituteId: user.instituteId,
+      role: user.role as any,
+      permissions,
+    };
+
+    const accessToken = generateAccessToken(jwtPayload);
+    const refreshToken = generateRefreshToken();
+
+    const tokenHash = await bcrypt.hash(refreshToken, 10);
+    await prisma.refreshToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    return { accessToken, refreshToken };
+  },
+
   /**
    * Login with phone + password (for Owner, Staff, Teacher, Accountant)
    */

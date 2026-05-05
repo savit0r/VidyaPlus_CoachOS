@@ -10,6 +10,7 @@ router.use(requireRole('super_admin'));
 
 // Platform KPIs
 router.get('/kpis', superAdminController.getKpis);
+router.post('/impersonate/:userId', superAdminController.impersonate);
 
 // Institute CRUD
 router.get('/institutes', superAdminController.listInstitutes);

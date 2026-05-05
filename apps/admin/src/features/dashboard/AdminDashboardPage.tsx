@@ -13,6 +13,7 @@ interface KpiData {
   totalUsers: number;
   totalStudents: number;
   expiringPlans: number;
+  totalRevenue: number;
 }
 
 export default function AdminDashboardPage() {
@@ -40,7 +41,30 @@ export default function AdminDashboardPage() {
     fetchData();
   }, []);
 
+  const handleImpersonate = async (ownerId: string) => {
+    try {
+      const { data } = await api.post(`/super-admin/impersonate/${ownerId}`);
+      const { accessToken, user } = data.data;
+      
+      // Store the impersonation token and redirect to the web app
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // Open the web app in a new tab
+      window.open('http://localhost:5173/dashboard', '_blank');
+    } catch (err) {
+      alert('Impersonation failed. Make sure the institute has an owner.');
+    }
+  };
+
   const kpis = kpiData ? [
+    { 
+      label: 'Platform Revenue', 
+      value: `₹${(kpiData.totalRevenue ?? 0).toLocaleString('en-IN')}`, 
+      icon: Zap, 
+      color: 'blue', 
+      trend: 'Total Collection' 
+    },
     { 
       label: 'Active Institutes', 
       value: (kpiData.activeInstitutes ?? 0).toLocaleString(), 
@@ -54,13 +78,6 @@ export default function AdminDashboardPage() {
       icon: Users, 
       color: 'emerald', 
       trend: `${kpiData.totalStudents ?? 0} students` 
-    },
-    { 
-      label: 'Platform Health', 
-      value: '100%', 
-      icon: Activity, 
-      color: 'blue', 
-      trend: 'All systems operational' 
     },
     { 
       label: 'Suspended', 
@@ -146,8 +163,8 @@ export default function AdminDashboardPage() {
                  </thead>
                  <tbody className="divide-y divide-slate-50">
                    {!loading && recentInstitutes.map((inst: any) => (
-                     <tr key={inst.id} className="hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => navigate(`/institutes/${inst.id}`)}>
-                       <td className="px-6 py-4">
+                     <tr key={inst.id} className="hover:bg-slate-50/50 transition-colors group">
+                       <td className="px-6 py-4" onClick={() => navigate(`/institutes/${inst.id}`)}>
                          <div>
                            <p className="text-sm font-bold text-slate-900 group-hover:text-primary-600 transition-colors">{inst.name}</p>
                            <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
@@ -171,7 +188,21 @@ export default function AdminDashboardPage() {
                          </div>
                        </td>
                        <td className="px-6 py-4">
-                          <p className="text-sm font-semibold text-slate-700">{inst.owner?.name || '—'}</p>
+                          <div className="flex items-center justify-between">
+                            <div>
+                               <p className="text-sm font-semibold text-slate-700">{inst.owner?.name || '—'}</p>
+                               <p className="text-[10px] text-slate-400 font-medium">{inst.owner?.phone || ''}</p>
+                            </div>
+                            {inst.owner && (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleImpersonate(inst.owner.id); }}
+                                className="p-2 rounded-lg bg-slate-100 text-slate-500 hover:bg-primary-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                title="Impersonate Owner"
+                              >
+                                <Zap className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                        </td>
                      </tr>
                    ))}
