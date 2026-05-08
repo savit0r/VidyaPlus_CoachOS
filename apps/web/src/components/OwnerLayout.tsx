@@ -5,6 +5,8 @@ import api from '../lib/api';
 import {
   GraduationCap, Users, CalendarCheck, IndianRupee, Bell,
   TrendingUp, BookOpen, UserCog, Settings, LogOut, LayoutDashboard,
+  Wallet, 
+
   Menu, X, Search, ChevronLeft, MoreHorizontal, Sun, Moon
 } from 'lucide-react';
 
@@ -16,6 +18,8 @@ const NAV_ITEMS = [
   { icon: IndianRupee, label: 'Fees', path: '/fees', permission: 'fees.view' },
   { icon: Bell, label: 'Notifications', path: '/notifications' },
   { icon: TrendingUp, label: 'Reports', path: '/reports', permission: 'fees.view' },
+  { icon: Wallet, label: 'Wallet', path: '/wallet', permission: 'fees.view' },
+
   { icon: UserCog, label: 'Staff', path: '/staff', permission: 'settings.manage' },
   { icon: Settings, label: 'Settings', path: '/settings', permission: 'settings.manage' },
 ];
@@ -69,7 +73,7 @@ export default function OwnerLayout() {
     <div className="flex flex-col min-h-screen bg-surface font-sans pb-20 lg:pb-0 lg:flex-row">
       {/* Sidebar - Hidden on mobile, fixed/sticky on desktop */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-[60] bg-canvas border-r border-hairline transition-all duration-300 ease-in-out 
+        className={`fixed inset-y-0 left-0 z-60 bg-canvas border-r border-hairline transition-all duration-300 ease-in-out 
           ${sidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full'} 
           lg:relative lg:translate-x-0 lg:z-30 ${sidebarOpen ? 'lg:w-64' : 'lg:w-20'}`}
       >

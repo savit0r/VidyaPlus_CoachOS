@@ -22,7 +22,7 @@ CoachOS is built with a focus on developer-grade information density and cinemat
 - **Academic Context**: Full lifecycle tracking from enrollment to alumni status.
 
 ### 📅 Attendance System
-- **Real-time Marking**: Bulk attendance marking (Present, Absent, Late) with 24-hour locking logic.
+- **Real-time Marking**:  Attendance marking (Present, Absent, Late) with 24-hour locking logic.
 - **Visual Analytics**: Interactive heatmap calendars and 30-day attendance summaries for every student.
 
 ### 💸 Fee Collection Engine

@@ -186,7 +186,7 @@ function CreateBatchModal({ onClose, onCreated }: { onClose: () => void; onCreat
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+<div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-modal overflow-hidden flex flex-col animate-fade-in" onClick={e => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
@@ -270,6 +270,7 @@ function CreateBatchModal({ onClose, onCreated }: { onClose: () => void; onCreat
     </div>
   );
 }
+
 
 function Field({ label, name, value, onChange, required, type = 'text', placeholder }: {
   label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; 

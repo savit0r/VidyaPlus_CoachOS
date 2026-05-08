@@ -17,6 +17,8 @@ import StaffPage from './features/staff/StaffPage';
 import NotificationPage from './features/notifications/NotificationPage';
 import ReportsPage from './features/reports/ReportsPage';
 import SettingsPage from './features/settings/SettingsPage';
+import WalletPage from './features/wallet/WalletPage';
+
 
 export default function App() {
   const { isAuthenticated, fetchUser } = useAuthStore();
@@ -62,6 +64,8 @@ export default function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/staff" element={<StaffPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/wallet" element={<WalletPage />} />
+
           </Route>
         </Route>
 
