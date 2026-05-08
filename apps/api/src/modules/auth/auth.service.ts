@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../../lib/prisma';
 import logger from '../../lib/logger';
-import { DEFAULT_ROLE_PERMISSIONS, JwtPayload, Permission } from '@coachOS/shared';
+import { DEFAULT_ROLE_PERMISSIONS, JwtPayload, Permission } from '@coachos/shared';
 
 const BCRYPT_ROUNDS = 12;
 

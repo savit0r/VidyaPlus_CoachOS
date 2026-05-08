@@ -1,5 +1,5 @@
 {
-  "name": "@coachOS/web",
+  "name": "@coachos/web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@coachOS/shared": "*",
+    "@coachos/shared": "*",
     "@tanstack/react-query": "^5.50.0",
     "axios": "^1.7.0",
     "lucide-react": "^0.400.0",

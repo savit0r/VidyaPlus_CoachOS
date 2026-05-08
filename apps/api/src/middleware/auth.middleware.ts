@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { JwtPayload } from '@coachOS/shared';
+import { JwtPayload } from '@coachos/shared';
 import logger from '../lib/logger';
 
 // Extend Express Request to include user context

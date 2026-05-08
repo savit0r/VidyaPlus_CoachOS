@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../../lib/prisma';
 import logger from '../../lib/logger';
 import { z } from 'zod';
-import { DAYS_OF_WEEK } from '@coachOS/shared';
+import { DAYS_OF_WEEK } from '@coachos/shared';
 
 // ============================================
 // Validation Schemas
@@ -190,6 +190,24 @@ export const batchController = {
     try {
       const instituteId = req.user!.instituteId!;
       const body = createBatchSchema.parse(req.body);
+
+      // Check batch limit
+      const institute = await prisma.institute.findUnique({
+        where: { id: instituteId },
+        include: {
+          plan: true,
+          _count: { select: { batches: { where: { deletedAt: null } } } },
+        },
+      });
+
+      if (institute?.plan && institute._count.batches >= institute.plan.maxBatches) {
+        res.status(403).json({
+          success: false,
+          error: `Batch limit reached (${institute.plan.maxBatches}). Upgrade your plan.`,
+          code: 'LIMIT_REACHED',
+        });
+        return;
+      }
 
       // Detect conflicts
       const conflicts = await detectConflicts(

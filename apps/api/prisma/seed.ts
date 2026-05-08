@@ -7,63 +7,76 @@ async function main() {
   console.log('🌱 Seeding CoachOS database...');
 
   // 1. Create default subscription plans
-  const trialPlan = await prisma.plan.upsert({
+  const aarambhPlan = await prisma.plan.upsert({
     where: { id: '00000000-0000-0000-0000-000000000001' },
-    update: {},
+    update: {
+      name: 'Aarambh (Entry)',
+      maxStudents: 40,
+      maxStaff: 2,
+      maxBatches: 3,
+      maxStorageMb: 250,
+      priceMonthly: 99,
+      featuresJson: { whatsappFree: 0, analytics: 'basic' },
+    },
     create: {
       id: '00000000-0000-0000-0000-000000000001',
-      name: 'Trial',
-      maxStudents: 50,
-      maxStaff: 5,
-      maxStorageMb: 500,
-      priceMonthly: 0,
-      featuresJson: { trial: true, durationDays: 90 },
+      name: 'Aarambh (Entry)',
+      maxStudents: 40,
+      maxStaff: 2,
+      maxBatches: 3,
+      maxStorageMb: 250,
+      priceMonthly: 99,
+      featuresJson: { whatsappFree: 0, analytics: 'basic' },
     },
   });
 
-  const starterPlan = await prisma.plan.upsert({
+  const pragatiPlan = await prisma.plan.upsert({
     where: { id: '00000000-0000-0000-0000-000000000002' },
-    update: {},
+    update: {
+      name: 'Pragati (Pro)',
+      maxStudents: 300,
+      maxStaff: 10,
+      maxBatches: 10,
+      maxStorageMb: 5000,
+      priceMonthly: 499,
+      featuresJson: { whatsappFree: 500, analytics: 'advanced' },
+    },
     create: {
       id: '00000000-0000-0000-0000-000000000002',
-      name: 'Starter',
-      maxStudents: 200,
+      name: 'Pragati (Pro)',
+      maxStudents: 300,
       maxStaff: 10,
-      maxStorageMb: 2000,
-      priceMonthly: 2500,
-      featuresJson: { onlinePayments: false, advancedReports: false },
+      maxBatches: 10,
+      maxStorageMb: 5000,
+      priceMonthly: 499,
+      featuresJson: { whatsappFree: 500, analytics: 'advanced' },
     },
   });
 
-  const growthPlan = await prisma.plan.upsert({
+  const utsavPlan = await prisma.plan.upsert({
     where: { id: '00000000-0000-0000-0000-000000000003' },
-    update: {},
+    update: {
+      name: 'Utsav (Enterprise)',
+      maxStudents: 100000, // unlimited-ish
+      maxStaff: 1000,
+      maxBatches: 1000,
+      maxStorageMb: 50000,
+      priceMonthly: 1999,
+      featuresJson: { whatsappFree: 2000, analytics: 'multi-institute' },
+    },
     create: {
       id: '00000000-0000-0000-0000-000000000003',
-      name: 'Growth',
-      maxStudents: 1000,
-      maxStaff: 25,
-      maxStorageMb: 10000,
-      priceMonthly: 7500,
-      featuresJson: { onlinePayments: true, advancedReports: true },
-    },
-  });
-
-  const proPlan = await prisma.plan.upsert({
-    where: { id: '00000000-0000-0000-0000-000000000004' },
-    update: {},
-    create: {
-      id: '00000000-0000-0000-0000-000000000004',
-      name: 'Pro',
-      maxStudents: 5000,
-      maxStaff: 50,
+      name: 'Utsav (Enterprise)',
+      maxStudents: 100000,
+      maxStaff: 1000,
+      maxBatches: 1000,
       maxStorageMb: 50000,
-      priceMonthly: 20000,
-      featuresJson: { onlinePayments: true, advancedReports: true, multiBranch: true, whitelabel: false },
+      priceMonthly: 1999,
+      featuresJson: { whatsappFree: 2000, analytics: 'multi-institute' },
     },
   });
 
-  console.log('✅ Plans created:', [trialPlan.name, starterPlan.name, growthPlan.name, proPlan.name].join(', '));
+  console.log('✅ Plans created:', [aarambhPlan.name, pragatiPlan.name, utsavPlan.name].join(', '));
 
   // 2. Create Super Admin user (instituteId is null — super admin is platform-level)
   const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || 'admin@vidyaplus.in';
@@ -103,7 +116,7 @@ async function main() {
       phone: '9876543210',
       email: 'demo@coachOS.in',
       address: '123 Education Street, Pune, Maharashtra',
-      planId: starterPlan.id,
+      planId: aarambhPlan.id,
       academicYear: '2026-2027',
       status: 'active',
       setupCompleted: true,

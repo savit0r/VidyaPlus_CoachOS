@@ -1,5 +1,5 @@
 {
-  "name": "@coachOS/api",
+  "name": "@coachos/api",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@coachOS/shared": "*",
+    "@coachos/shared": "*",
     "@prisma/client": "^5.14.0",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.7.0",
@@ -41,5 +41,8 @@
     "prisma": "^5.14.0",
     "tsx": "^4.9.0",
     "typescript": "^5.4.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

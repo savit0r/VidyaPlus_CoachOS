@@ -16,6 +16,7 @@ import staffRoutes from './modules/staff/staff.routes';
 import notificationRoutes from './modules/notifications/notification.routes';
 import reportRoutes from './modules/reports/report.routes';
 import settingsRoutes from './modules/institute-settings/settings.routes';
+import walletRoutes from './modules/wallet/wallet.routes';
 
 const app = express();
 
@@ -70,6 +71,7 @@ app.use('/api/v1/staff', staffRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/wallet', walletRoutes);
 
 // 404 and error handlers (must be last)
 app.use(notFoundHandler);
