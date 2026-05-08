@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 import {
   ArrowLeft, Building2, Users, BookOpen, CreditCard, Settings,
-  Mail, Phone, MapPin, Calendar, Shield, Loader2, AlertTriangle,
-  CheckCircle2, XCircle, Pencil, Trash2, UserCheck, Zap, UserPlus, TrendingUp, MoreVertical,
+  Mail, Phone, MapPin, Calendar, Shield, Loader2,
+  CheckCircle2, XCircle, UserPlus, TrendingUp, MoreVertical, Zap
 } from 'lucide-react';
 
 interface InstituteDetail {
@@ -17,19 +17,10 @@ interface InstituteDetail {
   breakdown?: { roles: Record<string, number> };
 }
 
-const STATUS_ACTIONS: Record<string, { label: string; to: string; color: string }> = {
-  active: { label: 'Suspend', to: 'suspended', color: 'bg-warn-500/10 text-warn-400 hover:bg-warn-500/20' },
-  suspended: { label: 'Reactivate', to: 'active', color: 'bg-accent-500/10 text-accent-400 hover:bg-accent-500/20' },
-  inactive: { label: 'Reactivate', to: 'active', color: 'bg-accent-500/10 text-accent-400 hover:bg-accent-500/20' },
-};
-
-const ROLE_BADGES: Record<string, string> = {
-  owner: 'bg-indigo-500/20 text-indigo-300',
-  teacher: 'bg-emerald-500/15 text-emerald-400',
-  accountant: 'bg-amber-500/15 text-amber-400',
-  staff: 'bg-slate-600/30 text-slate-300',
-  student: 'bg-slate-700/30 text-slate-400',
-  parent: 'bg-slate-700/30 text-slate-400',
+const STATUS_ACTIONS: Record<string, { label: string; to: string }> = {
+  active: { label: 'Suspend', to: 'suspended' },
+  suspended: { label: 'Reactivate', to: 'active' },
+  inactive: { label: 'Reactivate', to: 'active' },
 };
 
 export default function InstituteDetailPage() {
@@ -50,7 +41,7 @@ export default function InstituteDetailPage() {
       .then(({ data }) => setInstitute(data.data))
       .catch(() => navigate('/institutes'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
     if (activeTab === 'audit' && logs.length === 0) {
@@ -63,7 +54,7 @@ export default function InstituteDetailPage() {
       api.get(`/super-admin/institutes/${id}/payments`)
         .then(({ data }) => setPayments(data.data));
     }
-  }, [activeTab, id]);
+  }, [activeTab, id, logs.length, payments.length]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!institute) return;
@@ -85,7 +76,7 @@ export default function InstituteDetailPage() {
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
       window.open('http://localhost:5173/dashboard', '_blank');
-    } catch (err) {
+    } catch {
       alert('Impersonation failed. Make sure the institute has an active owner.');
     }
   };
@@ -93,7 +84,7 @@ export default function InstituteDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 text-admin-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-brand-green animate-spin" />
       </div>
     );
   }
@@ -106,318 +97,252 @@ export default function InstituteDetailPage() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* Back Button */}
-      <button onClick={() => navigate('/institutes')} className="flex items-center gap-2 text-sm text-surface-400 hover:text-white transition-colors">
+      <button onClick={() => navigate('/institutes')} className="flex items-center gap-2 text-sm text-steel hover:text-ink transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Institutes
       </button>
 
-      {/* Header Card */}
-      <div className="glass-card rounded-2xl p-6 border border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+      <div className="mint-card p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 text-2xl font-black shadow-inner">
+            <div className="w-16 h-16 rounded-lg bg-surface flex items-center justify-center text-ink text-2xl font-semibold">
               {institute.name.charAt(0)}
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-black text-white tracking-tight">{institute.name}</h1>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                  institute.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${institute.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                  {institute.status}
-                </span>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-semibold text-ink tracking-[-0.5px]">{institute.name}</h1>
+                <StatusBadge status={institute.status} />
               </div>
-              <p className="text-sm text-slate-500 font-medium mt-1">{institute.subdomain}.coachos.in</p>
+              <p className="text-sm text-steel mt-1">{institute.subdomain}.coachos.in</p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-             {owner && (
-               <button
-                 onClick={() => handleImpersonate(owner.id)}
-                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"
-               >
-                 <Zap className="w-3.5 h-3.5" /> Impersonate Owner
-               </button>
-             )}
-             {statusAction && (
-               <button
-                 onClick={() => handleStatusChange(statusAction.to)}
-                 disabled={updating}
-                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border border-white/5 ${statusAction.color}`}
-               >
-                 {updating ? 'Processing...' : statusAction.label}
-               </button>
-             )}
-             <button className="p-2 rounded-xl bg-slate-800/50 text-slate-400 hover:text-white border border-white/5">
-                <Settings className="w-4 h-4" />
-             </button>
+            {owner && (
+              <button onClick={() => handleImpersonate(owner.id)} className="mint-btn-primary">
+                <Zap className="w-4 h-4" /> Impersonate Owner
+              </button>
+            )}
+            {statusAction && (
+              <button onClick={() => handleStatusChange(statusAction.to)} disabled={updating} className="mint-btn-secondary disabled:opacity-50">
+                {updating ? 'Processing...' : statusAction.label}
+              </button>
+            )}
+            <button className="w-10 h-10 rounded-full border border-hairline text-steel hover:text-ink hover:bg-surface flex items-center justify-center">
+              <Settings className="w-4 h-4" />
+            </button>
           </div>
         </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/5">
-           {[
-             { icon: Phone, label: 'Support Phone', value: institute.phone },
-             { icon: Mail, label: 'Billing Email', value: institute.email || '—' },
-             { icon: MapPin, label: 'Location', value: institute.address || 'Global' },
-             { icon: Calendar, label: 'Academic Year', value: institute.academicYear || '—' },
-           ].map((item, i) => (
-             <div key={i} className="flex flex-col gap-1">
-               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                 <item.icon className="w-3 h-3" /> {item.label}
-               </span>
-               <span className="text-xs font-bold text-slate-300">{item.value}</span>
-             </div>
-           ))}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-6 border-t border-hairline-soft">
+          {[
+            { icon: Phone, label: 'Support Phone', value: institute.phone },
+            { icon: Mail, label: 'Billing Email', value: institute.email || '-' },
+            { icon: MapPin, label: 'Location', value: institute.address || 'Global' },
+            { icon: Calendar, label: 'Academic Year', value: institute.academicYear || '-' },
+          ].map((item) => (
+            <div key={item.label} className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px] flex items-center gap-1.5">
+                <item.icon className="w-3 h-3" /> {item.label}
+              </span>
+              <span className="text-sm font-medium text-charcoal">{item.value}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-slate-900/50 rounded-2xl w-fit border border-white/5">
+      <div className="flex flex-wrap gap-2">
         {[
           { key: 'overview', label: 'Overview', icon: Building2 },
           { key: 'users', label: 'User Directory', icon: Users },
           { key: 'audit', label: 'Audit Logs', icon: Shield },
           { key: 'payments', label: 'Platform Fees', icon: CreditCard },
         ].map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key as any)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-              activeTab === key ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
+          <button key={key} onClick={() => setActiveTab(key as any)} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+            activeTab === key ? 'bg-primary text-on-primary border-primary' : 'bg-canvas text-steel border-hairline hover:text-ink'
+          }`}>
             <Icon className="w-4 h-4" />{label}
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
       <div className="min-h-[400px]">
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* KPI Section */}
             <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-               {[
-                 { label: 'Total Users', value: institute._count.users, icon: Users, color: 'indigo' },
-                 { label: 'Total Students', value: institute._count.studentProfiles, icon: UserPlus, color: 'emerald' },
-                 { label: 'Active Batches', value: institute._count.batches, icon: BookOpen, color: 'amber' },
-                 { label: 'Revenue Generated', value: `₹${(institute._count.feePlans * 1500).toLocaleString()}`, icon: TrendingUp, color: 'rose' },
-               ].map((stat, idx) => (
-                 <div key={idx} className="glass-card p-5 rounded-2xl border border-white/5 group hover:border-indigo-500/30 transition-all">
-                    <div className={`w-10 h-10 rounded-xl bg-${stat.color}-500/10 flex items-center justify-center text-${stat.color}-400 mb-4 group-hover:scale-110 transition-transform`}>
-                       <stat.icon className="w-5 h-5" />
-                    </div>
-                    <p className="text-2xl font-black text-white">{stat.value}</p>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">{stat.label}</p>
-                 </div>
-               ))}
-
-               {/* Role Breakdown Chart (Simplified) */}
-               <div className="col-span-full glass-card p-6 rounded-2xl border border-white/5 mt-2">
-                  <h3 className="text-sm font-bold text-white mb-6 flex items-center gap-2">
-                     <Users className="w-4 h-4 text-indigo-400" /> User Distribution
-                  </h3>
-                  <div className="space-y-4">
-                     {Object.entries(institute.breakdown?.roles || {}).map(([role, count]) => {
-                        const total = institute.users.length || 1;
-                        const percent = Math.round((count / total) * 100);
-                        return (
-                          <div key={role} className="space-y-1.5">
-                             <div className="flex justify-between items-center text-[11px] font-bold text-slate-400">
-                                <span className="uppercase tracking-wider">{role.replace('_', ' ')}</span>
-                                <span>{count} ({percent}%)</span>
-                             </div>
-                             <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-indigo-500 transition-all duration-1000" style={{ width: `${percent}%` }} />
-                             </div>
-                          </div>
-                        );
-                     })}
+              {[
+                { label: 'Total Users', value: institute._count.users, icon: Users },
+                { label: 'Total Students', value: institute._count.studentProfiles, icon: UserPlus },
+                { label: 'Active Batches', value: institute._count.batches, icon: BookOpen },
+                { label: 'Revenue Generated', value: `₹${(institute._count.feePlans * 1500).toLocaleString()}`, icon: TrendingUp },
+              ].map((stat) => (
+                <div key={stat.label} className="mint-card p-5">
+                  <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-ink mb-4">
+                    <stat.icon className="w-5 h-5" />
                   </div>
-               </div>
+                  <p className="text-2xl font-semibold text-ink font-mono tracking-tight">{stat.value}</p>
+                  <p className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px] mt-1">{stat.label}</p>
+                </div>
+              ))}
+
+              <div className="col-span-full mint-card p-6 mt-2">
+                <h3 className="text-sm font-semibold text-ink mb-6 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-ink" /> User Distribution
+                </h3>
+                <div className="space-y-4">
+                  {Object.entries(institute.breakdown?.roles || {}).map(([role, count]) => {
+                    const total = institute.users.length || 1;
+                    const percent = Math.round((count / total) * 100);
+                    return (
+                      <div key={role} className="space-y-1.5">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">
+                          <span>{role.replace('_', ' ')}</span>
+                          <span>{count} ({percent}%)</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-surface rounded-full overflow-hidden">
+                          <div className="h-full bg-brand-green transition-all duration-1000" style={{ width: `${percent}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            {/* Plan and Owner Detail */}
             <div className="lg:col-span-4 space-y-6">
-               <div className="glass-card p-6 rounded-2xl border border-white/5 bg-gradient-to-br from-indigo-600/10 to-transparent">
-                  <div className="flex items-center justify-between mb-4">
-                     <h3 className="text-sm font-bold text-white uppercase tracking-widest">Platform Plan</h3>
-                     <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400"><CreditCard className="w-4 h-4" /></span>
+              <div className="mint-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">Platform Plan</h3>
+                  <span className="p-1.5 rounded-md bg-surface text-ink"><CreditCard className="w-4 h-4" /></span>
+                </div>
+                {institute.plan ? (
+                  <div className="space-y-5">
+                    <div>
+                      <p className="text-2xl font-semibold text-ink">{institute.plan.name}</p>
+                      <p className="text-sm text-steel mt-0.5">₹{Number(institute.plan.priceMonthly).toLocaleString()}/month</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-hairline-soft">
+                      <Limit label="Students" value={institute.plan.maxStudents} />
+                      <Limit label="Staff" value={institute.plan.maxStaff} />
+                    </div>
+                    <button className="mint-btn-secondary w-full">Upgrade Plan</button>
                   </div>
-                  {institute.plan ? (
-                    <div className="space-y-5">
-                       <div>
-                          <p className="text-xl font-black text-white">{institute.plan.name}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">₹{Number(institute.plan.priceMonthly).toLocaleString()}/month</p>
-                       </div>
-                       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                          <div>
-                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Students</p>
-                             <p className="text-sm font-bold text-slate-200">{institute.plan.maxStudents}</p>
-                          </div>
-                          <div>
-                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Staff</p>
-                             <p className="text-sm font-bold text-slate-200">{institute.plan.maxStaff}</p>
-                          </div>
-                       </div>
-                       <button className="w-full py-2.5 rounded-xl border border-indigo-500/20 text-indigo-400 text-xs font-bold hover:bg-indigo-500/10 transition-all">
-                          Upgrade Plan
-                       </button>
-                    </div>
-                  ) : <p className="text-sm text-slate-600 italic">No plan assigned</p>}
-               </div>
+                ) : <p className="text-sm text-steel">No plan assigned</p>}
+              </div>
 
-               {owner && (
-                 <div className="glass-card p-6 rounded-2xl border border-white/5">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Account Owner</h3>
-                    <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-indigo-400 font-bold border border-white/5">
-                          {owner.name.charAt(0)}
-                       </div>
-                       <div>
-                          <p className="text-sm font-bold text-white">{owner.name}</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5">{owner.phone}</p>
-                       </div>
+              {owner && (
+                <div className="mint-card p-6">
+                  <h3 className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px] mb-4">Account Owner</h3>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-ink font-semibold">
+                      {owner.name.charAt(0)}
                     </div>
-                 </div>
-               )}
+                    <div>
+                      <p className="text-sm font-medium text-ink">{owner.name}</p>
+                      <p className="text-xs text-steel mt-0.5">{owner.phone}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {activeTab === 'users' && (
-          <div className="glass-card rounded-2xl border border-white/5 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/5">
-                    {['Staff Member', 'Role', 'Status', 'Last Activity', ''].map(h => (
-                      <th key={h} className="text-left text-[10px] font-black text-slate-500 uppercase tracking-widest px-6 py-4">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {staffMembers.map(user => (
-                    <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
-                            {user.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-white">{user.name}</p>
-                            <p className="text-[11px] text-slate-500">{user.email || user.phone}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${ROLE_BADGES[user.role] || ROLE_BADGES.staff}`}>
-                          {user.role.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest ${user.status === 'active' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {user.status === 'active' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                          {user.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-xs font-bold text-slate-400">
-                        {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Never'}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                         <button className="p-1.5 rounded-lg text-slate-600 hover:text-white transition-colors"><MoreVertical className="w-4 h-4" /></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable
+            headers={['Staff Member', 'Role', 'Status', 'Last Activity', '']}
+            rows={staffMembers.map(user => [
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-md bg-surface flex items-center justify-center text-xs font-semibold text-ink">{user.name.charAt(0)}</div>
+                <div><p className="text-sm font-medium text-ink">{user.name}</p><p className="text-xs text-steel">{user.email || user.phone}</p></div>
+              </div>,
+              <span className="inline-flex px-2 py-0.5 rounded-sm text-[11px] font-medium bg-surface text-steel border border-hairline">{user.role.replace('_', ' ')}</span>,
+              <span className={`flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.5px] ${user.status === 'active' ? 'text-ink' : 'text-brand-error'}`}>
+                {user.status === 'active' ? <CheckCircle2 className="w-3.5 h-3.5 text-brand-green" /> : <XCircle className="w-3.5 h-3.5" />} {user.status}
+              </span>,
+              <span className="text-xs text-steel">{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Never'}</span>,
+              <button className="w-8 h-8 rounded-full text-steel hover:text-ink hover:bg-surface flex items-center justify-center"><MoreVertical className="w-4 h-4" /></button>,
+            ])}
+          />
         )}
 
         {activeTab === 'audit' && (
-          <div className="glass-card rounded-2xl border border-white/5 overflow-hidden">
-             <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                <h3 className="text-xs font-bold text-white uppercase tracking-widest">Recent Tenant Actions</h3>
-                {logsLoading && <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />}
-             </div>
-             <div className="overflow-x-auto">
-                <table className="w-full">
-                   <thead>
-                      <tr className="bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                         <th className="px-6 py-4 text-left">Action</th>
-                         <th className="px-6 py-4 text-left">User</th>
-                         <th className="px-6 py-4 text-left">Time</th>
-                         <th className="px-6 py-4 text-left">Entity</th>
-                      </tr>
-                   </thead>
-                   <tbody className="divide-y divide-white/5">
-                      {logs.map((log, i) => (
-                        <tr key={i} className="hover:bg-white/5 transition-colors">
-                           <td className="px-6 py-4">
-                              <span className="text-xs font-bold text-slate-200">{log.action.replace('.', ' ')}</span>
-                           </td>
-                           <td className="px-6 py-4">
-                              <p className="text-[11px] font-bold text-indigo-400">{log.user.name}</p>
-                              <p className="text-[9px] text-slate-600 uppercase tracking-tighter">{log.user.role}</p>
-                           </td>
-                           <td className="px-6 py-4 text-xs text-slate-500">
-                              {new Date(log.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}
-                           </td>
-                           <td className="px-6 py-4 text-[10px] font-medium text-slate-500 italic">
-                              {log.entityType} ID: ...{log.entityId?.slice(-6)}
-                           </td>
-                        </tr>
-                      ))}
-                      {logs.length === 0 && !logsLoading && (
-                        <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-600 text-sm">No activity recorded for this tenant</td></tr>
-                      )}
-                   </tbody>
-                </table>
-             </div>
+          <div className="mint-card overflow-hidden">
+            <div className="p-4 border-b border-hairline-soft flex items-center justify-between">
+              <h3 className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">Recent Tenant Actions</h3>
+              {logsLoading && <Loader2 className="w-4 h-4 text-brand-green animate-spin" />}
+            </div>
+            <DataTable
+              headers={['Action', 'User', 'Time', 'Entity']}
+              rows={logs.map(log => [
+                <span className="text-sm font-medium text-ink">{log.action.replace('.', ' ')}</span>,
+                <div><p className="text-xs font-medium text-ink">{log.user.name}</p><p className="text-[11px] text-steel uppercase tracking-[0.5px]">{log.user.role}</p></div>,
+                <span className="text-xs text-steel">{new Date(log.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</span>,
+                <span className="text-xs text-steel">{log.entityType} ID: ...{log.entityId?.slice(-6)}</span>,
+              ])}
+              empty="No activity recorded for this tenant"
+            />
           </div>
         )}
 
         {activeTab === 'payments' && (
-           <div className="glass-card rounded-2xl border border-white/5 overflow-hidden">
-              <div className="overflow-x-auto">
-                 <table className="w-full">
-                    <thead>
-                       <tr className="bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                          <th className="px-6 py-4 text-left">Period</th>
-                          <th className="px-6 py-4 text-left">Plan</th>
-                          <th className="px-6 py-4 text-left">Amount</th>
-                          <th className="px-6 py-4 text-left">Mode</th>
-                          <th className="px-6 py-4 text-left">Status</th>
-                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                       {payments.map((p, i) => (
-                         <tr key={i} className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 text-sm font-bold text-slate-200">{p.feeRecord?.periodLabel || 'System'}</td>
-                            <td className="px-6 py-4 text-xs font-medium text-slate-400">{p.feeRecord?.feePlan?.name || 'Subscription'}</td>
-                            <td className="px-6 py-4 text-sm font-black text-white">₹{Number(p.amount).toLocaleString()}</td>
-                            <td className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">{p.paymentMode}</td>
-                            <td className="px-6 py-4">
-                               <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-                                  {p.status}
-                               </span>
-                            </td>
-                         </tr>
-                       ))}
-                       {payments.length === 0 && (
-                         <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-600 text-sm">No platform payments found</td></tr>
-                       )}
-                    </tbody>
-                 </table>
-              </div>
-           </div>
+          <DataTable
+            headers={['Period', 'Plan', 'Amount', 'Mode', 'Status']}
+            rows={payments.map(p => [
+              <span className="text-sm font-medium text-ink">{p.feeRecord?.periodLabel || 'System'}</span>,
+              <span className="text-xs text-steel">{p.feeRecord?.feePlan?.name || 'Subscription'}</span>,
+              <span className="text-sm font-semibold text-ink font-mono">₹{Number(p.amount).toLocaleString()}</span>,
+              <span className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">{p.paymentMode}</span>,
+              <StatusBadge status={p.status} />,
+            ])}
+            empty="No platform payments found"
+          />
         )}
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const active = status === 'active' || status === 'paid' || status === 'success';
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border ${
+      active ? 'bg-brand-green-soft text-ink border-brand-green/20' : 'bg-danger-50 text-brand-error border-danger-200'
+    }`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-brand-green' : 'bg-brand-error'}`} />
+      {status}
+    </span>
+  );
+}
+
+function Limit({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <p className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">{label}</p>
+      <p className="text-sm font-medium text-ink font-mono">{value}</p>
+    </div>
+  );
+}
+
+function DataTable({ headers, rows, empty }: { headers: string[]; rows: React.ReactNode[][]; empty?: string }) {
+  return (
+    <div className="mint-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-surface border-b border-hairline-soft">
+              {headers.map(h => <th key={h} className="text-left text-[11px] font-semibold text-steel uppercase tracking-[0.5px] px-6 py-4">{h}</th>)}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-hairline-soft">
+            {rows.length > 0 ? rows.map((row, i) => (
+              <tr key={i} className="hover:bg-surface/70 transition-colors">
+                {row.map((cell, j) => <td key={j} className="px-6 py-4">{cell}</td>)}
+              </tr>
+            )) : (
+              <tr><td colSpan={headers.length} className="px-6 py-12 text-center text-steel text-sm">{empty || 'No records found'}</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

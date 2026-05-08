@@ -21,62 +21,56 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 relative overflow-hidden">
-      {/* Abstract Background Accents */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/5 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-primary-600/5 blur-[150px] rounded-full translate-y-1/2 -translate-x-1/3" />
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden hero-backdrop">
+      <div className="absolute inset-x-0 top-0 h-24 bg-white/30" />
 
       <div className="relative w-full max-w-[440px] animate-fade-in">
-        {/* Logo Section */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white shadow-card border border-slate-100 mb-6 transition-transform hover:scale-105">
-            <GraduationCap className="w-10 h-10 text-primary-600" />
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-primary border border-hairline mb-5">
+            <GraduationCap className="w-7 h-7 text-brand-green" />
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">VidyaPlus</h1>
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">CoachOS Management Platform</p>
+          <h1 className="text-3xl font-semibold text-ink tracking-[-0.5px]">VidyaPlus</h1>
+          <p className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px] mt-2">CoachOS Management Platform</p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-3xl shadow-card p-10 border border-slate-100">
+        <div className="bg-canvas rounded-lg p-8 sm:p-10 border border-hairline">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
-            <p className="text-slate-500 text-sm mt-2">Enter your credentials to access the platform</p>
+            <h2 className="text-[28px] leading-tight font-semibold text-ink">Sign In</h2>
+            <p className="text-steel text-sm mt-2">Enter your credentials to access the platform</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center justify-between animate-fade-in">
+            <div className="mb-6 p-4 rounded-md bg-danger-50 border border-danger-200 text-brand-error text-sm flex items-center justify-between animate-fade-in">
               <span className="font-medium">{error}</span>
-              <button onClick={clearError} className="ml-3 p-1 hover:bg-red-100 rounded-lg transition-colors flex-shrink-0">✕</button>
+              <button onClick={clearError} className="ml-3 p-1 hover:bg-danger-50 rounded-md transition-colors flex-shrink-0">x</button>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Phone Number Field */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="phone" className="block text-[13px] font-semibold text-slate-700 ml-1">
+              <label htmlFor="phone" className="block text-[11px] font-semibold text-steel ml-1 uppercase tracking-[0.5px]">
                 Phone Number
               </label>
-              <div className="flex items-center bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500/20 focus-within:border-primary-500 transition-all">
-                <span className="flex-shrink-0 pl-5 pr-4 text-slate-400 text-sm font-semibold border-r border-slate-200 py-4 select-none">+91</span>
+              <div className="flex items-center bg-canvas border border-hairline rounded-md overflow-hidden focus-within:border-brand-green transition-colors">
+                <span className="flex-shrink-0 pl-4 pr-3 text-steel text-sm font-medium border-r border-hairline py-3 select-none">+91</span>
                 <input
                   id="phone"
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                   placeholder="98765 43210"
-                  className="flex-1 bg-transparent pl-4 pr-5 py-4 text-slate-900 font-medium placeholder:text-slate-300 focus:outline-none"
+                  className="flex-1 bg-transparent pl-4 pr-5 py-3 text-ink placeholder:text-stone focus:outline-none"
                   required
                 />
               </div>
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
-                <label htmlFor="password" className="text-[13px] font-semibold text-slate-700">
+                <label htmlFor="password" className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">
                   Password
                 </label>
-                <a href="#" className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors">Forgot?</a>
+                <a href="#" className="text-xs font-medium text-ink hover:underline transition-all">Forgot?</a>
               </div>
               <div className="relative">
                 <input
@@ -84,31 +78,30 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pl-5 pr-14 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-medium placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                  placeholder="Password"
+                  className="w-full pl-4 pr-14 py-3 bg-canvas border border-hairline rounded-md text-ink placeholder:text-stone focus:outline-none focus:border-brand-green transition-colors"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-steel hover:text-ink hover:bg-surface transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={isLoading || phone.length !== 10 || password.length < 8}
-                className="w-full py-4 px-6 bg-primary-600 hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-2xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-primary-600/20 hover:shadow-xl hover:shadow-primary-600/30 active:scale-[0.98]"
+                className="mint-btn-primary w-full disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Signing in…
+                    Signing in...
                   </>
                 ) : (
                   'Sign In to Dashboard'
@@ -117,15 +110,15 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <p className="text-slate-400 text-[11px] font-medium italic">
-              Unified secure login for students, staff, and management.
+          <div className="mt-10 pt-6 border-t border-hairline text-center">
+            <p className="text-steel text-[11px] font-semibold uppercase tracking-[0.5px]">
+              Unified secure login for VidyaPlus
             </p>
           </div>
         </div>
 
-        <p className="text-center text-slate-400 text-[10px] font-semibold uppercase tracking-widest mt-8">
-          © 2026 VidyaPlus Technologies
+        <p className="text-center text-steel text-[11px] font-semibold uppercase tracking-[0.5px] mt-10">
+          (c) 2026 VidyaPlus Technologies
         </p>
       </div>
     </div>

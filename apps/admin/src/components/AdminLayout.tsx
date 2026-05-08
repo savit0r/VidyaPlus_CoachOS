@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuthStore } from '../stores/auth.store';
 import {
   LayoutDashboard, Building2, CreditCard, Settings, LogOut,
-  Menu, X, ChevronRight, Shield, Bell, Search, ChevronLeft
+  Menu, Shield, ChevronLeft, Sun, Moon
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
 export default function AdminLayout() {
   const { user, logout } = useAdminAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -24,29 +25,36 @@ export default function AdminLayout() {
     navigate('/login');
   };
 
+  const toggleTheme = () => {
+    const nextDark = !isDark;
+    setIsDark(nextDark);
+    document.documentElement.classList.toggle('dark', nextDark);
+    localStorage.setItem('theme', nextDark ? 'dark' : 'light');
+  };
+
   const currentNav = NAV_ITEMS.find(item =>
     location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path))
   );
   const pageTitle = currentNav?.label || 'Platform Overview';
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    <div className="flex min-h-screen bg-surface font-sans">
       {/* Sidebar */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 bg-canvas border-r border-hairline transition-all duration-300 ease-in-out ${
           sidebarOpen ? 'w-60' : 'w-20'
         } lg:relative lg:translate-x-0 ${!sidebarOpen && 'lg:w-20'}`}
       >
         <div className="flex flex-col h-full">
           {/* Brand */}
-          <div className="h-16 flex items-center px-6 border-b border-slate-100 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <Shield className="w-5 h-5 text-white" />
+          <div className="h-16 flex items-center px-6 border-b border-hairline-soft flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+              <Shield className="w-5 h-5 text-brand-green" />
             </div>
             {sidebarOpen && (
               <div className="ml-3 overflow-hidden whitespace-nowrap">
-                <h1 className="font-bold text-slate-900 tracking-tight">VidyaPlus</h1>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Admin Console</p>
+                <h1 className="font-semibold text-ink tracking-tight">VidyaPlus</h1>
+                <p className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px] leading-none">Admin Console</p>
               </div>
             )}
           </div>
@@ -64,17 +72,17 @@ export default function AdminLayout() {
                   }}
                   className={`w-full flex items-center h-10 px-3 rounded-lg text-sm font-medium transition-all group ${
                     isActive
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-surface text-ink'
+                      : 'text-steel hover:bg-surface hover:text-ink'
                   }`}
                   title={!sidebarOpen ? label : undefined}
                 >
                   <Icon className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? 'text-primary-600' : 'text-slate-400 group-hover:text-slate-600'
+                    isActive ? 'text-brand-green' : 'text-steel group-hover:text-ink'
                   }`} />
                   {sidebarOpen && <span className="ml-3 truncate">{label}</span>}
                   {isActive && sidebarOpen && (
-                    <div className="ml-auto w-1 h-4 bg-primary-600 rounded-full" />
+                    <div className="ml-auto w-1 h-4 bg-brand-green rounded-full" />
                   )}
                 </button>
               );
@@ -82,19 +90,19 @@ export default function AdminLayout() {
           </nav>
 
           {/* Footer Actions */}
-          <div className="p-3 border-t border-slate-100 space-y-1 flex-shrink-0">
+          <div className="p-3 border-t border-hairline-soft space-y-1 flex-shrink-0">
              <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="w-full flex items-center h-10 px-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all group hidden lg:flex"
+              className="w-full flex items-center h-10 px-3 rounded-md text-sm font-medium text-steel hover:bg-surface hover:text-ink transition-colors group hidden lg:flex"
             >
-              <ChevronLeft className={`w-5 h-5 flex-shrink-0 text-slate-400 group-hover:text-slate-600 transition-transform duration-300 ${!sidebarOpen ? 'rotate-180' : ''}`} />
+              <ChevronLeft className={`w-4 h-4 flex-shrink-0 text-steel group-hover:text-ink transition-transform duration-300 ${!sidebarOpen ? 'rotate-180' : ''}`} />
               {sidebarOpen && <span className="ml-3">Collapse</span>}
             </button>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center h-10 px-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all group"
+              className="w-full flex items-center h-10 px-3 rounded-md text-sm font-medium text-steel hover:bg-surface hover:text-brand-error transition-colors group"
             >
-              <LogOut className="w-5 h-5 flex-shrink-0 text-slate-400 group-hover:text-red-500" />
+              <LogOut className="w-4 h-4 flex-shrink-0 text-steel group-hover:text-brand-error" />
               {sidebarOpen && <span className="ml-3">Sign Out</span>}
             </button>
           </div>
@@ -104,7 +112,7 @@ export default function AdminLayout() {
       {/* Backdrop for mobile */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -112,32 +120,41 @@ export default function AdminLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between gap-4 flex-shrink-0">
+        <header className="h-16 sticky top-0 z-30 bg-canvas/90 backdrop-blur-md border-b border-hairline px-4 sm:px-8 flex items-center justify-between gap-4 flex-shrink-0">
           <div className="flex items-center gap-4 flex-1">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 lg:hidden"
+              className="p-2 rounded-md hover:bg-surface text-steel lg:hidden"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-bold text-slate-900">{pageTitle}</h1>
+            <h1 className="text-lg font-semibold text-ink">{pageTitle}</h1>
           </div>
 
           <div className="flex items-center gap-3">
-             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
-               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-               <span className="text-[10px] font-bold uppercase tracking-wider">All Systems Operational</span>
+            <button
+              onClick={toggleTheme}
+              className="w-10 h-10 rounded-full border border-hairline bg-canvas text-steel hover:text-ink hover:bg-surface flex items-center justify-center transition-colors"
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-brand-green-soft text-ink rounded-full border border-brand-green/20">
+               <span className="w-2 h-2 bg-brand-green rounded-full" />
+               <span className="text-[11px] font-semibold uppercase tracking-[0.5px]">All Systems Operational</span>
              </div>
             
-            <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block" />
+            <div className="h-8 w-px bg-hairline mx-1 hidden sm:block" />
 
             <div className="flex items-center gap-3 pl-1">
               <div className="hidden md:block text-right">
-                <p className="text-sm font-semibold text-slate-900 leading-tight">{user?.name}</p>
-                <p className="text-[10px] font-bold text-primary-600 uppercase tracking-wider mt-0.5">Super Admin</p>
+                <p className="text-sm font-medium text-ink leading-tight">{user?.name}</p>
+                <p className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px] mt-0.5">Super Admin</p>
               </div>
-              <div className="w-9 h-9 rounded-lg bg-primary-50 border border-primary-100 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
-                <span className="text-sm font-bold text-primary-600">{user?.name?.charAt(0) || 'A'}</span>
+              <div className="w-9 h-9 rounded-md bg-surface border border-hairline flex items-center justify-center overflow-hidden flex-shrink-0">
+                <span className="text-sm font-semibold text-ink">{user?.name?.charAt(0) || 'A'}</span>
               </div>
             </div>
           </div>

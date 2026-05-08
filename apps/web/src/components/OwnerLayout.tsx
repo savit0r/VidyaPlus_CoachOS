@@ -5,7 +5,7 @@ import api from '../lib/api';
 import {
   GraduationCap, Users, CalendarCheck, IndianRupee, Bell,
   TrendingUp, BookOpen, UserCog, Settings, LogOut, LayoutDashboard,
-  Menu, X, Search, ChevronLeft, MoreHorizontal
+  Menu, X, Search, ChevronLeft, MoreHorizontal, Sun, Moon
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -29,10 +29,23 @@ const BOTTOM_NAV_ITEMS = [
 
 export default function OwnerLayout() {
   const { user, logout, hasPermission } = useAuthStore();
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile first: hidden by default
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   const navigate = useNavigate();
   const location = useLocation();
+
+  const toggleDarkMode = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    if (newDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const fetchUnreadCount = async () => {
     try {
@@ -53,26 +66,26 @@ export default function OwnerLayout() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 font-sans pb-20 lg:pb-0 lg:flex-row">
+    <div className="flex flex-col min-h-screen bg-surface font-sans pb-20 lg:pb-0 lg:flex-row">
       {/* Sidebar - Hidden on mobile, fixed/sticky on desktop */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-[60] bg-white border-r border-slate-200 transition-all duration-300 ease-in-out 
+        className={`fixed inset-y-0 left-0 z-[60] bg-canvas border-r border-hairline transition-all duration-300 ease-in-out 
           ${sidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full'} 
           lg:relative lg:translate-x-0 lg:z-30 ${sidebarOpen ? 'lg:w-64' : 'lg:w-20'}`}
       >
         <div className="flex flex-col h-full">
           {/* Brand */}
-          <div className="h-16 flex items-center px-6 border-b border-slate-100 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <GraduationCap className="w-5 h-5 text-white" />
+          <div className="h-16 flex items-center px-6 border-b border-hairline flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-ink flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="w-5 h-5 text-brand-green" />
             </div>
             {(sidebarOpen || window.innerWidth < 1024) && (
               <div className="ml-3 overflow-hidden whitespace-nowrap">
-                <h1 className="font-bold text-slate-900 tracking-tight">VidyaPlus</h1>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">CoachOS</p>
+                <h1 className="font-bold text-ink tracking-tight">VidyaPlus</h1>
+                <p className="text-[10px] font-bold text-ink-muted uppercase tracking-widest leading-none">CoachOS</p>
               </div>
             )}
-            <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1 rounded-lg hover:bg-slate-100 text-slate-400">
+            <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1 rounded-lg hover:bg-surface-hover text-ink-muted">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -88,19 +101,19 @@ export default function OwnerLayout() {
                     navigate(path);
                     if (window.innerWidth < 1024) setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center h-11 px-3 rounded-xl text-sm font-medium transition-all group ${
+                  className={`w-full flex items-center h-9 px-3 rounded-md text-sm font-medium transition-all group ${
                     isActive
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-surface text-brand-green'
+                      : 'text-ink-muted hover:bg-surface-hover hover:text-ink'
                   }`}
                   title={!sidebarOpen ? label : undefined}
                 >
-                  <Icon className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? 'text-primary-600' : 'text-slate-400 group-hover:text-slate-600'
+                  <Icon className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                    isActive ? 'text-brand-green' : 'text-ink-muted group-hover:text-ink'
                   }`} />
                   {(sidebarOpen || window.innerWidth < 1024) && <span className="ml-3 truncate">{label}</span>}
                   {isActive && (sidebarOpen || window.innerWidth < 1024) && (
-                    <div className="ml-auto w-1.5 h-1.5 bg-primary-600 rounded-full" />
+                    <div className="ml-auto w-1 h-1 bg-brand-green rounded-full shadow-[0_0_8px_rgba(0,212,164,0.6)]" />
                   )}
                 </button>
               );
@@ -108,19 +121,19 @@ export default function OwnerLayout() {
           </nav>
 
           {/* Footer Actions */}
-          <div className="p-3 border-t border-slate-100 space-y-1 flex-shrink-0">
+          <div className="p-3 border-t border-hairline-soft space-y-1 flex-shrink-0">
              <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="w-full hidden lg:flex items-center h-11 px-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all group"
+              className="w-full hidden lg:flex items-center h-10 px-3 rounded-md text-sm font-medium text-steel hover:bg-surface transition-colors group"
             >
-              <ChevronLeft className={`w-5 h-5 flex-shrink-0 text-slate-400 group-hover:text-slate-600 transition-transform duration-300 ${!sidebarOpen ? 'rotate-180' : ''}`} />
+              <ChevronLeft className={`w-4 h-4 flex-shrink-0 text-steel group-hover:text-ink transition-transform duration-300 ${!sidebarOpen ? 'rotate-180' : ''}`} />
               {sidebarOpen && <span className="ml-3">Collapse</span>}
             </button>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center h-11 px-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all group"
+              className="w-full flex items-center h-10 px-3 rounded-md text-sm font-medium text-steel hover:bg-surface hover:text-brand-error transition-colors group"
             >
-              <LogOut className="w-5 h-5 flex-shrink-0 text-slate-400 group-hover:text-red-500" />
+              <LogOut className="w-4 h-4 flex-shrink-0 text-steel group-hover:text-brand-error" />
               {(sidebarOpen || window.innerWidth < 1024) && <span className="ml-3">Sign Out</span>}
             </button>
           </div>
@@ -138,45 +151,53 @@ export default function OwnerLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar - Always visible, compact on mobile */}
-        <header className="h-16 sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between gap-4 flex-shrink-0">
+        <header className="h-16 sticky top-0 z-40 bg-canvas/80 backdrop-blur-md border-b border-hairline px-4 sm:px-8 flex items-center justify-between gap-4 flex-shrink-0">
           <div className="flex items-center gap-3">
              {/* Mobile Logo Only */}
-             <div className="lg:hidden w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                <GraduationCap className="w-5 h-5 text-white" />
+             <div className="lg:hidden w-8 h-8 rounded-lg bg-ink flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-5 h-5 text-brand-green" />
              </div>
-             <h1 className="lg:hidden text-base font-bold text-slate-900 tracking-tight">VidyaPlus</h1>
+             <h1 className="lg:hidden text-base font-bold text-ink tracking-tight">VidyaPlus</h1>
              
              {/* Desktop Search Placeholder */}
              <div className="relative max-w-md hidden lg:block">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
                 <input 
                   type="text" 
                   placeholder="Search anything..." 
-                  className="w-64 pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 transition-all outline-none"
+                  className="w-64 pl-10 pr-4 py-2 bg-surface border border-hairline rounded-md text-sm focus:bg-canvas focus:ring-4 focus:ring-brand-green/5 focus:border-brand-green transition-all outline-none"
                 />
              </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <button className="p-2 rounded-xl text-slate-500 hover:bg-slate-50 relative group">
-              <Bell className="w-5 h-5" />
+            <button 
+              onClick={toggleDarkMode}
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-steel hover:bg-surface transition-colors"
+              title="Toggle Dark Mode"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-steel hover:bg-surface relative group">
+              <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-brand-error rounded-full border-2 border-canvas" />
               )}
             </button>
             
-            <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block" />
+            <div className="h-8 w-px bg-hairline mx-1 hidden sm:block" />
 
             <div className="flex items-center gap-3 pl-1">
               <div className="hidden md:block text-right">
-                <p className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[120px]">{user?.name}</p>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{user?.role}</p>
+                <p className="text-sm font-medium text-ink leading-tight truncate max-w-[120px]">{user?.name}</p>
+                <p className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px] mt-0.5">{user?.role}</p>
               </div>
-              <div className="w-9 h-9 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
+              <div className="w-9 h-9 rounded-md bg-surface border border-hairline flex items-center justify-center overflow-hidden flex-shrink-0">
                 {(user?.photoUrl || user?.avatar) ? (
                   <img src={user.photoUrl || user.avatar} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-sm font-bold text-primary-600">{user?.name?.charAt(0)}</span>
+                  <span className="text-sm font-semibold text-ink">{user?.name?.charAt(0)}</span>
                 )}
               </div>
             </div>
@@ -192,7 +213,7 @@ export default function OwnerLayout() {
       </div>
 
       {/* Bottom Navigation - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 lg:hidden px-2 pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-canvas border-t border-hairline lg:hidden px-2 pb-safe">
         <div className="flex items-center justify-around h-16">
           {BOTTOM_NAV_ITEMS.map(({ icon: Icon, label, path }) => {
             const isActive = path === 'more' ? sidebarOpen : (location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path)));
@@ -204,7 +225,7 @@ export default function OwnerLayout() {
                   else navigate(path);
                 }}
                 className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all ${
-                  isActive ? 'text-primary-600' : 'text-slate-400'
+                  isActive ? 'text-ink' : 'text-steel'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''} transition-transform`} />
@@ -212,7 +233,7 @@ export default function OwnerLayout() {
                   {label}
                 </span>
                 {isActive && path !== 'more' && (
-                   <div className="absolute top-0 w-8 h-1 bg-primary-600 rounded-b-full" />
+                   <div className="absolute top-0 w-8 h-1 bg-brand-green rounded-b-full" />
                 )}
               </button>
             );

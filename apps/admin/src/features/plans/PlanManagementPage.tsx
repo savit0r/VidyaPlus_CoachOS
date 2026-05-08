@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import {
-  Plus, CreditCard, Users, Shield, HardDrive, Check,
-  Pencil, Trash2, AlertTriangle, X, Loader2, Save, TrendingUp
+  Plus, CreditCard, Users, Shield, HardDrive,
+  Pencil, AlertTriangle, X, Loader2, Save
 } from 'lucide-react';
 
 interface Plan {
@@ -47,73 +47,67 @@ export default function PlanManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-brand-green animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="animate-fade-in space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Subscription Plans</h1>
-          <p className="text-sm text-slate-500 font-medium mt-1">Configure product tiers and platform limits</p>
+          <h1 className="text-3xl font-semibold text-ink tracking-[-0.5px]">Subscription Plans</h1>
+          <p className="text-sm text-steel mt-1">Configure product tiers and platform limits.</p>
         </div>
-        <button
-          onClick={() => { setEditingPlan(null); setShowModal(true); }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"
-        >
+        <button onClick={() => { setEditingPlan(null); setShowModal(true); }} className="mint-btn-primary">
           <Plus className="w-4 h-4" /> Create New Tier
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {plans.map((plan) => (
-          <div key={plan.id} className={`glass-card rounded-3xl p-6 border transition-all ${
-            plan.status === 'active' ? 'border-white/5' : 'border-rose-500/20 opacity-75'
-          }`}>
-            <div className="flex items-start justify-between mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                <CreditCard className="w-6 h-6" />
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleEdit(plan)}
-                  className="p-2 rounded-xl bg-slate-800/50 text-slate-400 hover:text-white transition-all border border-white/5"
-                >
+        {plans.map((plan, index) => {
+          const featured = index === 1 || plan.name.toLowerCase().includes('lift');
+          return (
+            <div key={plan.id} className={`bg-canvas rounded-lg p-8 border transition-colors ${
+              featured ? 'border-2 border-brand-green shadow-[rgba(0,212,164,0.08)_0px_8px_24px]' :
+              plan.status === 'active' ? 'border-hairline' : 'border-danger-200 opacity-75'
+            }`}>
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-ink">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <button onClick={() => handleEdit(plan)} className="w-8 h-8 rounded-full border border-hairline text-steel hover:text-ink hover:bg-surface flex items-center justify-center">
                   <Pencil className="w-4 h-4" />
                 </button>
               </div>
-            </div>
 
-            <div className="mb-6">
-              <h3 className="text-xl font-black text-white tracking-tight">{plan.name}</h3>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-black text-white">₹{Number(plan.priceMonthly).toLocaleString()}</span>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">/ Month</span>
+              <div className="mb-6">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-2xl font-semibold text-ink tracking-[-0.5px]">{plan.name}</h3>
+                  {featured && <span className="mint-badge">Featured</span>}
+                </div>
+                <div className="flex items-baseline gap-1 mt-2">
+                  <span className="text-5xl font-semibold text-ink font-mono tracking-[-1.5px]">₹{Number(plan.priceMonthly).toLocaleString()}</span>
+                  <span className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">/ Month</span>
+                </div>
+              </div>
+
+              <div className="space-y-4 py-6 border-y border-hairline-soft mb-6">
+                <FeatureItem icon={Users} label="Max Students" value={plan.maxStudents.toLocaleString()} />
+                <FeatureItem icon={Shield} label="Max Staff" value={plan.maxStaff.toLocaleString()} />
+                <FeatureItem icon={HardDrive} label="Storage" value={`${(plan.maxStorageMb / 1000).toFixed(1)} GB`} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">Active Tenants</span>
+                  <span className="text-sm font-medium text-charcoal">{plan._count?.institutes || 0}</span>
+                </div>
+                <StatusBadge status={plan.status} />
               </div>
             </div>
-
-            <div className="space-y-4 py-6 border-y border-white/5 mb-6">
-               <FeatureItem icon={Users} label="Max Students" value={plan.maxStudents.toLocaleString()} />
-               <FeatureItem icon={Shield} label="Max Staff" value={plan.maxStaff.toLocaleString()} />
-               <FeatureItem icon={HardDrive} label="Storage" value={`${(plan.maxStorageMb / 1000).toFixed(1)} GB`} />
-            </div>
-
-            <div className="flex items-center justify-between">
-               <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Tenants</span>
-                  <span className="text-sm font-bold text-slate-300">{plan._count?.institutes || 0}</span>
-               </div>
-               <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                 plan.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                 : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-               }`}>
-                 {plan.status}
-               </span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {showModal && (
@@ -127,14 +121,25 @@ export default function PlanManagementPage() {
   );
 }
 
+function StatusBadge({ status }: { status: string }) {
+  const active = status === 'active';
+  return (
+    <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium border ${
+      active ? 'bg-brand-green-soft text-ink border-brand-green/20' : 'bg-danger-50 text-brand-error border-danger-200'
+    }`}>
+      {status}
+    </span>
+  );
+}
+
 function FeatureItem({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2.5">
-        <Icon className="w-3.5 h-3.5 text-slate-500" />
-        <span className="text-xs font-bold text-slate-400">{label}</span>
+        <Icon className="w-3.5 h-3.5 text-steel" />
+        <span className="text-sm text-charcoal">{label}</span>
       </div>
-      <span className="text-xs font-black text-white">{value}</span>
+      <span className="text-sm font-medium text-ink font-mono">{value}</span>
     </div>
   );
 }
@@ -170,115 +175,61 @@ function PlanModal({ plan, onClose, onSaved }: { plan: Plan | null, onClose: () 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-lg glass-card rounded-3xl p-8 animate-scale-in border border-white/10" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-lg bg-canvas rounded-lg p-8 border border-hairline" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-black text-white tracking-tight">
-            {plan ? `Configure Tier: ${plan.name}` : 'Design New Subscription Tier'}
+          <h2 className="text-2xl font-semibold text-ink tracking-[-0.5px]">
+            {plan ? `Configure ${plan.name}` : 'Design New Subscription Tier'}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="w-8 h-8 rounded-full border border-hairline text-steel hover:text-ink hover:bg-surface flex items-center justify-center">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs font-bold flex items-center gap-2">
+          <div className="mb-6 p-4 bg-danger-50 border border-danger-200 rounded-md text-brand-error text-sm flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" /> {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-             <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Plan Name</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g. Professional, Enterprise"
-                  className="w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                  required
-                />
-             </div>
-
-             <div className="grid grid-cols-2 gap-4">
-                <div>
-                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Monthly Price (₹)</label>
-                   <input
-                     type="number"
-                     value={form.priceMonthly}
-                     onChange={e => setForm({ ...form, priceMonthly: Number(e.target.value) })}
-                     className="w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                     required
-                   />
-                </div>
-                <div>
-                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Storage (MB)</label>
-                   <input
-                     type="number"
-                     value={form.maxStorageMb}
-                     onChange={e => setForm({ ...form, maxStorageMb: Number(e.target.value) })}
-                     className="w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                     required
-                   />
-                </div>
-             </div>
-
-             <div className="grid grid-cols-2 gap-4">
-                <div>
-                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Max Students</label>
-                   <input
-                     type="number"
-                     value={form.maxStudents}
-                     onChange={e => setForm({ ...form, maxStudents: Number(e.target.value) })}
-                     className="w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                     required
-                   />
-                </div>
-                <div>
-                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Max Staff Members</label>
-                   <input
-                     type="number"
-                     value={form.maxStaff}
-                     onChange={e => setForm({ ...form, maxStaff: Number(e.target.value) })}
-                     className="w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                     required
-                   />
-                </div>
-             </div>
-
-             <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Visibility Status</label>
-                <select
-                  value={form.status}
-                  onChange={e => setForm({ ...form, status: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-2xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                >
-                   <option value="active">Public / Active</option>
-                   <option value="inactive">Archived / Hidden</option>
-                </select>
-             </div>
+          <InputField label="Plan Name" value={form.name} onChange={value => setForm({ ...form, name: value })} placeholder="Professional" required />
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Monthly Price" type="number" value={form.priceMonthly} onChange={value => setForm({ ...form, priceMonthly: Number(value) })} required />
+            <InputField label="Storage (MB)" type="number" value={form.maxStorageMb} onChange={value => setForm({ ...form, maxStorageMb: Number(value) })} required />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Max Students" type="number" value={form.maxStudents} onChange={value => setForm({ ...form, maxStudents: Number(value) })} required />
+            <InputField label="Max Staff" type="number" value={form.maxStaff} onChange={value => setForm({ ...form, maxStaff: Number(value) })} required />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-steel uppercase tracking-[0.5px] mb-1.5">Visibility Status</label>
+            <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="mint-input w-full">
+              <option value="active">Public / Active</option>
+              <option value="inactive">Archived / Hidden</option>
+            </select>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-3 rounded-2xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all border border-white/5"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-[2] flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-indigo-600 text-white text-xs font-black hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50"
-            >
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose} className="mint-btn-secondary">Cancel</button>
+            <button type="submit" disabled={saving} className="mint-btn-primary disabled:opacity-50">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {plan ? 'Apply Modifications' : 'Launch New Tier'}
+              {plan ? 'Apply Changes' : 'Launch Tier'}
             </button>
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+function InputField({ label, value, onChange, placeholder, required, type = 'text' }: {
+  label: string; value: string | number; onChange: (value: string) => void; placeholder?: string; required?: boolean; type?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-[11px] font-semibold text-steel uppercase tracking-[0.5px] mb-1.5">{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required={required} className="mint-input w-full" />
     </div>
   );
 }

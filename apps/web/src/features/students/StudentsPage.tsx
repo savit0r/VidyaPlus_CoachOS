@@ -409,7 +409,7 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
   return (
     <div className="fixed inset-0 z-[100] bg-white lg:bg-slate-900/60 lg:backdrop-blur-sm lg:flex lg:items-center lg:justify-center lg:p-4 overflow-y-auto" onClick={e => e.stopPropagation()}>
-      <div className="w-full lg:max-w-2xl bg-white lg:rounded-[32px] shadow-2xl min-h-screen lg:min-h-0 flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500">
+      <div className="w-full lg:max-w-2xl bg-white lg:rounded-lg border border-hairline min-h-screen lg:min-h-0 flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500">
         <div className="sticky top-0 bg-white z-10 px-6 lg:px-8 py-6 border-b border-slate-50 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight">Onboard Student</h2>

@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from './stores/auth.store';
 import { ProtectedRoute, PublicOnlyRoute } from './components/RouteGuards';
 import OwnerLayout from './components/OwnerLayout';
+import HomePage from './features/marketing/HomePage';
 import LoginPage from './features/auth/LoginPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import StudentsPage from './features/students/StudentsPage';
@@ -22,11 +23,23 @@ export default function App() {
 
   useEffect(() => {
     if (isAuthenticated) fetchUser();
+    
+    // Initialize Dark Mode
+    const isDark = localStorage.getItem('theme') === 'dark' || 
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<HomePage />} />
+
         {/* Public routes */}
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
