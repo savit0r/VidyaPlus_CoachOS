@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../lib/api';
 import { useAuthStore } from '../../stores/auth.store';
+import AuthModal from '../auth/AuthModal';
 import {
   ArrowRight, BarChart3, Bell, BookOpen, CalendarCheck, CheckCircle2,
   CreditCard, GraduationCap, IndianRupee, Layers3, ShieldCheck, Users
@@ -46,12 +47,30 @@ const MODULES = [
 export default function HomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const primaryTarget = isAuthenticated ? '/dashboard' : '/register';
+  const [authModal, setAuthModal] = useState<{ open: boolean; mode: 'login' | 'register' }>({ 
+    open: false, 
+    mode: 'login' 
+  });
 
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
+    // Check for auth triggers in URL
+    const authTrigger = searchParams.get('auth');
+    if (authTrigger === 'login') {
+      setAuthModal({ open: true, mode: 'login' });
+      // Clear param without refresh
+      searchParams.delete('auth');
+      setSearchParams(searchParams);
+    } else if (authTrigger === 'register') {
+      setAuthModal({ open: true, mode: 'register' });
+      searchParams.delete('auth');
+      setSearchParams(searchParams);
+    }
+
     const fetchPlans = async () => {
       try {
         const { data } = await api.get('/public/plans');
@@ -84,10 +103,16 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/login')} className="hidden sm:inline-flex mint-btn-secondary">
+            <button 
+              onClick={() => setAuthModal({ open: true, mode: 'login' })} 
+              className="hidden sm:inline-flex mint-btn-secondary"
+            >
               Sign in
             </button>
-            <button onClick={() => navigate(primaryTarget)} className="mint-btn-primary">
+            <button 
+              onClick={() => isAuthenticated ? navigate('/dashboard') : setAuthModal({ open: true, mode: 'register' })} 
+              className="mint-btn-primary"
+            >
               {isAuthenticated ? 'Open dashboard' : 'Get started'}
             </button>
           </div>
@@ -112,7 +137,10 @@ export default function HomePage() {
                 </p>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                  <button onClick={() => navigate(primaryTarget)} className="mint-btn-brand">
+                  <button 
+                    onClick={() => isAuthenticated ? navigate('/dashboard') : setAuthModal({ open: true, mode: 'register' })} 
+                    className="mint-btn-brand"
+                  >
                     {isAuthenticated ? 'Open dashboard' : 'Start with VidyaPlus'}
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -286,7 +314,14 @@ export default function HomePage() {
 
                       {/* CTA Button */}
                       <button
-                        onClick={() => navigate(index === 2 ? '/login' : `/register?planId=${plan.id}`)}
+                        onClick={() => {
+                          if (index === 2) {
+                            setAuthModal({ open: true, mode: 'login' });
+                          } else {
+                            setSearchParams({ planId: plan.id });
+                            setAuthModal({ open: true, mode: 'register' });
+                          }
+                        }}
                         className={`w-full min-h-[42px] px-5 rounded-full text-sm font-medium transition-colors flex items-center justify-center ${
                           isFeatured
                             ? 'bg-brand-green text-primary hover:bg-brand-green-deep'
@@ -333,13 +368,22 @@ export default function HomePage() {
                 Permissions, authentication, and audit-friendly workflows keep every module clear without slowing daily operations.
               </p>
             </div>
-            <button onClick={() => navigate(primaryTarget)} className="bg-on-dark text-primary min-h-10 px-5 rounded-full text-sm font-medium inline-flex items-center justify-center gap-2">
+            <button 
+              onClick={() => isAuthenticated ? navigate('/dashboard') : setAuthModal({ open: true, mode: 'login' })} 
+              className="bg-on-dark text-primary min-h-10 px-5 rounded-full text-sm font-medium inline-flex items-center justify-center gap-2"
+            >
               {isAuthenticated ? 'Open dashboard' : 'Sign in'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </section>
       </main>
+
+      <AuthModal 
+        isOpen={authModal.open} 
+        onClose={() => setAuthModal({ ...authModal, open: false })} 
+        initialMode={authModal.mode} 
+      />
     </div>
   );
 }

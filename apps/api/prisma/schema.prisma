@@ -60,6 +60,7 @@ model Institute {
   payments         Payment[]
   receipts         Receipt[]
   attendanceRecords AttendanceRecord[]
+  staffAttendance   StaffAttendance[]
   notifications    Notification[]
   auditLogs        AuditLog[]
   holidays         Holiday[]
@@ -98,6 +99,8 @@ model User {
   refreshTokens    RefreshToken[]
   markedAttendance AttendanceRecord[] @relation("MarkedBy")
   studentAttendance AttendanceRecord[] @relation("StudentAttendance")
+  staffAttendanceRecords StaffAttendance[] @relation("StaffAttendanceRecords")
+  staffAttendanceMarkedBy StaffAttendance[] @relation("StaffAttendanceMarkedBy")
   recordedPayments Payment[]         @relation("RecordedBy")
   voidedPayments   Payment[]         @relation("VoidedBy")
   auditLogs        AuditLog[]
@@ -318,6 +321,31 @@ model AttendanceRecord {
 }
 
 // ============================================
+// Staff Attendance
+// ============================================
+model StaffAttendance {
+  id               String    @id @default(uuid()) @db.Uuid
+  instituteId      String    @map("institute_id") @db.Uuid
+  staffId          String    @map("staff_id") @db.Uuid
+  date             DateTime  @db.Date
+  status           String    @db.VarChar(10) // present, absent, leave, half_day
+  markedById       String    @map("marked_by") @db.Uuid
+  markedAt         DateTime  @default(now()) @map("marked_at")
+  note             String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  institute Institute @relation(fields: [instituteId], references: [id])
+  staff     User      @relation("StaffAttendanceRecords", fields: [staffId], references: [id])
+  markedBy  User      @relation("StaffAttendanceMarkedBy", fields: [markedById], references: [id])
+
+  @@unique([staffId, date])
+  @@index([staffId, date])
+  @@index([instituteId])
+  @@map("staff_attendance")
+}
+
+// ============================================
 // Notification
 // ============================================
 model Notification {
@@ -461,3 +489,4 @@ model WalletTransaction {
   @@index([instituteId])
   @@map("wallet_transactions")
 }
+

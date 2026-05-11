@@ -129,5 +129,64 @@ export const payrollController = {
       logger.error('Failed to get payroll history', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to fetch payroll history' });
     }
+  // ---------- Get Salary Suggestion based on Attendance ----------
+  async getSalarySuggestion(req: Request, res: Response) {
+    try {
+      const instituteId = req.user!.instituteId!;
+      const { staffId, month, year } = req.query;
+
+      if (!staffId || !month || !year) {
+        res.status(400).json({ success: false, error: 'staffId, month, and year are required' });
+        return;
+      }
+
+      const staff = await prisma.user.findFirst({
+        where: { id: staffId as string, instituteId, deletedAt: null },
+        select: { baseSalary: true, name: true }
+      });
+
+      if (!staff) {
+        res.status(404).json({ success: false, error: 'Staff not found' });
+        return;
+      }
+
+      const startDate = new Date(parseInt(year as string), parseInt(month as string) - 1, 1);
+      const endDate = new Date(parseInt(year as string), parseInt(month as string), 0);
+      const totalDaysInMonth = endDate.getDate();
+
+      const attendance = await prisma.staffAttendance.findMany({
+        where: {
+          staffId: staffId as string,
+          date: { gte: startDate, lte: endDate }
+        }
+      });
+
+      const absentDays = attendance.filter(a => a.status === 'absent').length;
+      const halfDays = attendance.filter(a => a.status === 'half_day').length;
+      const leaveDays = attendance.filter(a => a.status === 'leave').length; // Leaves might be paid/unpaid, assuming unpaid for "simple" logic
+
+      const totalDeductionDays = absentDays + (halfDays * 0.5) + leaveDays;
+      const baseSalary = Number(staff.baseSalary);
+      const perDaySalary = baseSalary / 30; // Standardized to 30 days or totalDaysInMonth? User said "simple", usually 30 is used.
+      const deductionAmount = totalDeductionDays * perDaySalary;
+      const suggestedAmount = Math.max(0, baseSalary - deductionAmount);
+
+      res.json({
+        success: true,
+        data: {
+          baseSalary,
+          totalDaysInMonth,
+          absentDays,
+          halfDays,
+          leaveDays,
+          totalDeductionDays,
+          deductionAmount: Math.round(deductionAmount),
+          suggestedAmount: Math.round(suggestedAmount)
+        }
+      });
+    } catch (error: any) {
+      logger.error('Failed to get salary suggestion', { error: error.message });
+      res.status(500).json({ success: false, error: 'Failed to calculate salary suggestion' });
+    }
   },
 };

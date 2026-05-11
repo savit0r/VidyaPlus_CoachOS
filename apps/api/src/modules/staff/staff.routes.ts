@@ -17,5 +17,12 @@ router.delete('/:id', requirePermission('settings.manage'), staffController.dele
 // Payroll management
 router.post('/payroll', requirePermission('settings.manage'), payrollController.recordSalaryPayment);
 router.get('/payroll', requirePermission('settings.manage'), payrollController.getPayrollHistory);
+router.get('/payroll/suggestion', requirePermission('settings.manage'), payrollController.getSalarySuggestion);
+
+// Attendance management
+import { staffAttendanceController } from './staff-attendance.controller';
+router.post('/attendance/mark', requirePermission('settings.manage'), staffAttendanceController.markAttendance);
+router.get('/attendance/daily', requirePermission('settings.manage'), staffAttendanceController.getDailySummary);
+router.get('/attendance/summary', requirePermission('settings.manage'), staffAttendanceController.getMonthlySummary);
 
 export default router;

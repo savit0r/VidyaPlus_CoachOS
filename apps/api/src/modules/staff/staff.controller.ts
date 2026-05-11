@@ -58,13 +58,23 @@ export const staffController = {
   async listStaff(req: Request, res: Response) {
     try {
       const instituteId = req.user!.instituteId!;
+      const { search } = req.query;
+      
+      const where: any = {
+        instituteId,
+        role: { notIn: ['owner', 'student'] },
+        deletedAt: null,
+      };
+
+      if (search && typeof search === 'string') {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { phone: { contains: search, mode: 'insensitive' } },
+        ];
+      }
       
       const staff = await prisma.user.findMany({
-        where: {
-          instituteId,
-          role: { notIn: ['owner', 'student'] },
-          deletedAt: null,
-        },
+        where,
         orderBy: { createdAt: 'desc' },
       });
 

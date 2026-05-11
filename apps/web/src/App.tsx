@@ -43,10 +43,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
 
-        {/* Public routes */}
+        {/* Public routes — Now redirecting to landing modal */}
         <Route element={<PublicOnlyRoute />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<Navigate to="/?auth=login" replace />} />
+          <Route path="/register" element={<Navigate to="/?auth=register" replace />} />
         </Route>
 
         {/* Protected routes with Owner layout */}
