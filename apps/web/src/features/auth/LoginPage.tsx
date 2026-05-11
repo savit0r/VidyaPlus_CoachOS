@@ -4,7 +4,7 @@ import { useAuthStore } from '../../stores/auth.store';
 import { Eye, EyeOff, GraduationCap, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error, clearError } = useAuthStore();
@@ -13,7 +13,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(phone, password);
+      await login(email, password);
       navigate('/dashboard');
     } catch {
       // Error is handled in store
@@ -48,18 +48,17 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="phone" className="block text-[11px] font-semibold text-steel ml-1 uppercase tracking-[0.5px]">
-                Phone Number
+              <label htmlFor="email" className="block text-[11px] font-semibold text-steel ml-1 uppercase tracking-[0.5px]">
+                Email Address
               </label>
               <div className="flex items-center bg-canvas border border-hairline rounded-md overflow-hidden focus-within:border-brand-green transition-colors">
-                <span className="flex-shrink-0 pl-4 pr-3 text-steel text-sm font-medium border-r border-hairline py-3 select-none">+91</span>
                 <input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  placeholder="98765 43210"
-                  className="flex-1 bg-transparent pl-4 pr-5 py-3 text-ink placeholder:text-stone focus:outline-none"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="flex-1 bg-transparent px-4 py-3 text-ink placeholder:text-stone focus:outline-none"
                   required
                 />
               </div>
@@ -95,7 +94,7 @@ export default function LoginPage() {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={isLoading || phone.length !== 10 || password.length < 8}
+                disabled={isLoading || !email.includes('@') || password.length < 8}
                 className="mint-btn-primary w-full disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {isLoading ? (

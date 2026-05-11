@@ -20,7 +20,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
 
-  login: (phone: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   superAdminLogin: (email: string, password: string) => Promise<void>;
   sendOtp: (phone: string) => Promise<{ message: string }>;
   verifyOtp: (phone: string, otp: string) => Promise<void>;
@@ -38,10 +38,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  login: async (phone, password) => {
+  login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await api.post('/auth/login', { phone, password });
+      const { data } = await api.post('/auth/login', { email, password });
       const { accessToken, refreshToken, user } = data.data;
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);

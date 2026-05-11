@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 // Validation schemas
 const loginSchema = z.object({
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian phone number'),
+  email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -33,8 +33,8 @@ export const authController = {
    */
   async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const { phone, password } = loginSchema.parse(req.body);
-      const result = await authService.loginWithPassword(phone, password);
+      const { email, password } = loginSchema.parse(req.body);
+      const result = await authService.loginWithPassword(email, password);
       res.json({ success: true, data: result });
     } catch (error) {
       next(error);

@@ -64,10 +64,10 @@ export const authService = {
   /**
    * Login with phone + password (for Owner, Staff, Teacher, Accountant)
    */
-  async loginWithPassword(phone: string, password: string) {
+  async loginWithPassword(email: string, password: string) {
     const user = await prisma.user.findFirst({
       where: {
-        phone,
+        email,
         status: 'active',
         deletedAt: null,
         role: { notIn: ['student', 'parent'] },
@@ -76,12 +76,12 @@ export const authService = {
     });
 
     if (!user || !user.passwordHash) {
-      throw Object.assign(new Error('Invalid phone number or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
+      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
-      throw Object.assign(new Error('Invalid phone number or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
+      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
     }
 
     // Check if institute is active (for non-super-admin)
@@ -122,7 +122,7 @@ export const authService = {
       data: { lastLoginAt: new Date() },
     });
 
-    logger.info(`User logged in: ${user.phone} (${user.role})`);
+    logger.info(`User logged in: ${user.email} (${user.role})`);
 
     return {
       accessToken,
