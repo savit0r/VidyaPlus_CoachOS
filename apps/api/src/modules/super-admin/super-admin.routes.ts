@@ -25,5 +25,6 @@ router.delete('/institutes/:id', superAdminController.deleteInstitute);
 router.get('/plans', superAdminController.listPlans);
 router.post('/plans', superAdminController.createPlan);
 router.patch('/plans/:id', superAdminController.updatePlan);
+router.delete('/plans/:id', superAdminController.deletePlan);
 
 export default router;

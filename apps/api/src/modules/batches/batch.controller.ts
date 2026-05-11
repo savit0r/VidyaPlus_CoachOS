@@ -18,6 +18,8 @@ const createBatchSchema = z.object({
   capacity: z.number().int().positive().default(30),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  feeAmount: z.number().min(0).optional(),
+  feeType: z.enum(['monthly', 'one-time']).optional(),
 });
 
 const updateBatchSchema = z.object({
@@ -32,6 +34,8 @@ const updateBatchSchema = z.object({
   startDate: z.string().nullable().optional(),
   endDate: z.string().nullable().optional(),
   status: z.enum(['active', 'inactive']).optional(),
+  feeAmount: z.number().min(0).optional(),
+  feeType: z.enum(['monthly', 'one-time']).optional(),
 });
 
 const enrollSchema = z.object({
@@ -122,6 +126,7 @@ export const batchController = {
         where: { id, instituteId, deletedAt: null },
         include: {
           teacher: { select: { id: true, name: true, phone: true } },
+          feePlan: { select: { id: true, name: true, amount: true, frequency: true } },
           enrollments: {
             where: { status: 'active' },
             include: {
@@ -174,6 +179,7 @@ export const batchController = {
           startDate: batch.startDate,
           endDate: batch.endDate,
           status: batch.status,
+          feePlan: batch.feePlan,
           createdAt: batch.createdAt,
           students,
           enrolledCount: students.length,
@@ -224,6 +230,21 @@ export const batchController = {
         return;
       }
 
+      // Create FeePlan if fee info provided
+      let feePlanId = null;
+      if (body.feeAmount !== undefined && body.feeType) {
+        const feePlan = await prisma.feePlan.create({
+          data: {
+            instituteId,
+            name: `${body.name} - Default Fee`,
+            amount: body.feeAmount,
+            frequency: body.feeType,
+            status: 'active',
+          }
+        });
+        feePlanId = feePlan.id;
+      }
+
       const batch = await prisma.batch.create({
         data: {
           instituteId,
@@ -235,9 +256,13 @@ export const batchController = {
           startTime: body.startTime,
           endTime: body.endTime,
           capacity: body.capacity,
+          feePlanId,
           startDate: body.startDate ? new Date(body.startDate) : null,
           endDate: body.endDate ? new Date(body.endDate) : null,
         },
+        include: {
+          feePlan: true
+        }
       });
 
       await prisma.auditLog.create({
@@ -294,10 +319,40 @@ export const batchController = {
         }
       }
 
+      // Handle Fee Plan updates
+      let feePlanId = existing.feePlanId;
+      if (body.feeAmount !== undefined && body.feeType) {
+        if (feePlanId) {
+          await prisma.feePlan.update({
+            where: { id: feePlanId },
+            data: { 
+              amount: body.feeAmount, 
+              frequency: body.feeType,
+              name: `${body.name || existing.name} - Default Fee`
+            }
+          });
+        } else {
+          const newPlan = await prisma.feePlan.create({
+            data: {
+              instituteId,
+              name: `${body.name || existing.name} - Default Fee`,
+              amount: body.feeAmount,
+              frequency: body.feeType,
+              status: 'active'
+            }
+          });
+          feePlanId = newPlan.id;
+        }
+      }
+
+      // Remove fee fields from body before prisma.batch.update
+      const { feeAmount, feeType, ...batchData } = body;
+
       const batch = await prisma.batch.update({
         where: { id },
         data: {
-          ...body,
+          ...batchData,
+          feePlanId,
           startDate: body.startDate ? new Date(body.startDate) : body.startDate === null ? null : undefined,
           endDate: body.endDate ? new Date(body.endDate) : body.endDate === null ? null : undefined,
         },
@@ -394,11 +449,13 @@ export const batchController = {
           continue;
         }
 
+        const effectiveFeePlanId = body.feePlanId || batch.feePlanId;
+
         if (existing) {
           // Re-activate
           await prisma.batchEnrollment.update({
             where: { id: existing.id },
-            data: { status: 'active', feePlanId: body.feePlanId || null },
+            data: { status: 'active', feePlanId: effectiveFeePlanId },
           });
         } else {
           await prisma.batchEnrollment.create({
@@ -406,7 +463,7 @@ export const batchController = {
               instituteId,
               studentId,
               batchId,
-              feePlanId: body.feePlanId || null,
+              feePlanId: effectiveFeePlanId,
               status: 'active',
             },
           });

@@ -234,11 +234,13 @@ export const authService = {
     const otp = generateOtp();
     const expiryMinutes = parseInt(process.env.OTP_EXPIRY_MINUTES || '10');
 
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
     // Store OTP
     await prisma.otpStore.create({
       data: {
         phone,
-        otp,
+        hashedOtp,
         expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
       },
     });
@@ -278,7 +280,9 @@ export const authService = {
       });
     }
 
-    if (otpRecord.otp !== otp) {
+    const isMatch = await bcrypt.compare(otp, otpRecord.hashedOtp);
+
+    if (!isMatch) {
       // Increment attempts
       await prisma.otpStore.update({
         where: { id: otpRecord.id },

@@ -24,6 +24,8 @@ interface AuthState {
   superAdminLogin: (email: string, password: string) => Promise<void>;
   sendOtp: (phone: string) => Promise<{ message: string }>;
   verifyOtp: (phone: string, otp: string) => Promise<void>;
+  registerSendOtp: (email: string) => Promise<void>;
+  registerVerify: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
   clearError: () => void;
@@ -89,6 +91,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (err: any) {
       const message = err.response?.data?.error || 'OTP verification failed';
+      set({ error: message, isLoading: false });
+      throw err;
+    }
+  },
+
+  registerSendOtp: async (email) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post('/public/register/send-otp', { email });
+      set({ isLoading: false });
+    } catch (err: any) {
+      const message = err.response?.data?.error || 'Failed to send OTP';
+      set({ error: message, isLoading: false });
+      throw err;
+    }
+  },
+
+  registerVerify: async (registrationData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post('/public/register/verify', registrationData);
+      const { accessToken, refreshToken, user } = data.data;
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch (err: any) {
+      const message = err.response?.data?.error || 'Registration failed';
       set({ error: message, isLoading: false });
       throw err;
     }

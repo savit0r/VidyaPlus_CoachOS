@@ -16,7 +16,13 @@ async function main() {
       maxBatches: 3,
       maxStorageMb: 250,
       priceMonthly: 99,
-      featuresJson: { whatsappFree: 0, analytics: 'basic' },
+      featuresJson: { 
+        description: 'Impulse-buy price for small independent tutors.',
+        whatsappFree: 0, 
+        analytics: 'basic',
+        support: 'Help center / AI Bot',
+        idealFor: '1-teacher tutor with 10-40 students'
+      },
     },
     create: {
       id: '00000000-0000-0000-0000-000000000001',
@@ -26,7 +32,13 @@ async function main() {
       maxBatches: 3,
       maxStorageMb: 250,
       priceMonthly: 99,
-      featuresJson: { whatsappFree: 0, analytics: 'basic' },
+      featuresJson: { 
+        description: 'Impulse-buy price for small independent tutors.',
+        whatsappFree: 0, 
+        analytics: 'basic',
+        support: 'Help center / AI Bot',
+        idealFor: '1-teacher tutor with 10-40 students'
+      },
     },
   });
 
@@ -39,7 +51,13 @@ async function main() {
       maxBatches: 10,
       maxStorageMb: 5000,
       priceMonthly: 499,
-      featuresJson: { whatsappFree: 500, analytics: 'advanced' },
+      featuresJson: { 
+        description: 'Profit engine for mid-size tuition classes.',
+        whatsappFree: 500, 
+        analytics: 'advanced',
+        support: 'Priority WhatsApp',
+        includes: ['Staff Payroll']
+      },
     },
     create: {
       id: '00000000-0000-0000-0000-000000000002',
@@ -49,7 +67,13 @@ async function main() {
       maxBatches: 10,
       maxStorageMb: 5000,
       priceMonthly: 499,
-      featuresJson: { whatsappFree: 500, analytics: 'advanced' },
+      featuresJson: { 
+        description: 'Profit engine for mid-size tuition classes.',
+        whatsappFree: 500, 
+        analytics: 'advanced',
+        support: 'Priority WhatsApp',
+        includes: ['Staff Payroll']
+      },
     },
   });
 
@@ -62,7 +86,13 @@ async function main() {
       maxBatches: 1000,
       maxStorageMb: 50000,
       priceMonthly: 1999,
-      featuresJson: { whatsappFree: 2000, analytics: 'multi-institute' },
+      featuresJson: { 
+        description: 'For large hubs focusing on brand and multi-branch control.',
+        whatsappFree: 2000, 
+        analytics: 'multi-institute',
+        support: 'Dedicated Manager',
+        includes: ['Multi-institute dashboard', 'LMS support']
+      },
     },
     create: {
       id: '00000000-0000-0000-0000-000000000003',
@@ -72,7 +102,13 @@ async function main() {
       maxBatches: 1000,
       maxStorageMb: 50000,
       priceMonthly: 1999,
-      featuresJson: { whatsappFree: 2000, analytics: 'multi-institute' },
+      featuresJson: { 
+        description: 'For large hubs focusing on brand and multi-branch control.',
+        whatsappFree: 2000, 
+        analytics: 'multi-institute',
+        support: 'Dedicated Manager',
+        includes: ['Multi-institute dashboard', 'LMS support']
+      },
     },
   });
 
@@ -106,55 +142,15 @@ async function main() {
     console.log(`✅ Super Admin created: ${superAdmin.email} (phone: ${superAdmin.phone})`);
   }
 
-  // 3. Create a demo institute for development
+  // 3. Create a demo institute for development (REMOVED - Use self-serve registration)
+  /*
   const demoInstitute = await prisma.institute.upsert({
-    where: { subdomain: 'demo' },
-    update: {},
-    create: {
-      name: 'Demo Coaching Center',
-      subdomain: 'demo',
-      phone: '9876543210',
-      email: 'demo@coachOS.in',
-      address: '123 Education Street, Pune, Maharashtra',
-      planId: aarambhPlan.id,
-      academicYear: '2026-2027',
-      status: 'active',
-      setupCompleted: true,
-    },
+    ...
   });
-
-  console.log(`✅ Demo institute created: ${demoInstitute.name}`);
-
-  // 4. Create demo Owner for the institute
-  const ownerPassword = await bcrypt.hash('Owner@2026', 12);
-
-  const existingOwner = await prisma.user.findFirst({
-    where: { instituteId: demoInstitute.id, role: 'owner' },
-  });
-
-  let demoOwner;
-  if (existingOwner) {
-    demoOwner = existingOwner;
-    console.log(`✅ Demo Owner already exists: ${demoOwner.name}`);
-  } else {
-    demoOwner = await prisma.user.create({
-      data: {
-        instituteId: demoInstitute.id,
-        name: 'Rahul Sharma',
-        phone: '9876543210',
-        email: 'owner@demo.coachOS.in',
-        passwordHash: ownerPassword,
-        role: 'owner',
-        permissionsJson: [],
-        status: 'active',
-      },
-    });
-    console.log(`✅ Demo Owner created: ${demoOwner.name} (phone: ${demoOwner.phone}, password: Owner@2026)`);
-  }
+  */
 
   console.log('\n🎉 Seed complete! You can now login with:');
   console.log('  Super Admin: admin@vidyaplus.in / Admin@2026');
-  console.log('  Demo Owner:  9876543210 / Owner@2026');
 }
 
 main()

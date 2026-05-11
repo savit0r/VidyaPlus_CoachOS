@@ -6,8 +6,10 @@ import {
   Users, CalendarCheck, IndianRupee, BookOpen,
   AlertTriangle, ArrowRight, Loader2,
   UserPlus, ClipboardList, Receipt, TrendingUp,
-  Clock, CheckCircle2, History, CreditCard, Bell
+  Clock, CheckCircle2, History, CreditCard, Bell, 
+  Settings, Image
 } from 'lucide-react';
+import SetupWizard from './components/SetupChecklist';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -29,14 +31,16 @@ function AdminDashboard() {
     totalCollected: 0,
     totalOutstanding: 0,
   });
+  const [institute, setInstitute] = useState<any>(null);
 
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [studentsRes, batchesRes, feesRes] = await Promise.all([
+      const [studentsRes, batchesRes, feesRes, settingsRes] = await Promise.all([
         api.get('/students'),
         api.get('/batches'),
         api.get('/fees/dashboard'),
+        api.get('/settings/profile'),
       ]);
 
       const stds = studentsRes.data.data?.length || 0;
@@ -50,6 +54,7 @@ function AdminDashboard() {
         totalCollected: collected,
         totalOutstanding: outstanding,
       });
+      setInstitute(settingsRes.data.data);
     } catch (err) {
       console.error('Failed to load dashboard metrics', err);
     } finally {
@@ -112,6 +117,9 @@ function AdminDashboard() {
       </div>
 
       <div className="max-w-[1400px] mx-auto space-y-10">
+        
+        {/* Onboarding Wizard */}
+        <SetupWizard stats={stats} institute={institute} onRefresh={fetchDashboardData} />
 
       {/* Stats Grid - 2x2 on small, 4-col on large */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">

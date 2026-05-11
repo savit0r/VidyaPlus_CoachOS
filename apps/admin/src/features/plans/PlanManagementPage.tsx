@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import {
   Plus, CreditCard, Users, Shield, HardDrive,
-  Pencil, AlertTriangle, X, Loader2, Save
+  Pencil, AlertTriangle, X, Loader2, Save, Trash2
 } from 'lucide-react';
 
 interface Plan {
@@ -44,6 +44,20 @@ export default function PlanManagementPage() {
     setShowModal(true);
   };
 
+  const handleDelete = async (plan: Plan) => {
+    if (!window.confirm(`Are you sure you want to delete the "${plan.name}" plan? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await api.delete(`/super-admin/plans/${plan.id}`);
+      fetchPlans();
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Failed to delete plan';
+      alert(errorMsg);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -76,9 +90,14 @@ export default function PlanManagementPage() {
                 <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-ink">
                   <CreditCard className="w-5 h-5" />
                 </div>
-                <button onClick={() => handleEdit(plan)} className="w-8 h-8 rounded-full border border-hairline text-steel hover:text-ink hover:bg-surface flex items-center justify-center">
-                  <Pencil className="w-4 h-4" />
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => handleEdit(plan)} title="Edit Plan" className="w-8 h-8 rounded-full border border-hairline text-steel hover:text-ink hover:bg-surface flex items-center justify-center transition-colors">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDelete(plan)} title="Delete Plan" className="w-8 h-8 rounded-full border border-hairline text-steel hover:text-brand-error hover:bg-danger-50 flex items-center justify-center transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="mb-6">

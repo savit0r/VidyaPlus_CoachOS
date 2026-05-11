@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../lib/api';
 import { useAuthStore } from '../../stores/auth.store';
 import {
   ArrowRight, BarChart3, Bell, BookOpen, CalendarCheck, CheckCircle2,
@@ -44,7 +46,24 @@ const MODULES = [
 export default function HomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const primaryTarget = isAuthenticated ? '/dashboard' : '/login';
+  const primaryTarget = isAuthenticated ? '/dashboard' : '/register';
+
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const { data } = await api.get('/public/plans');
+        setPlans(data.data);
+      } catch (err) {
+        console.error('Failed to fetch plans', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   return (
     <div className="min-h-screen bg-canvas text-ink font-sans">
@@ -170,38 +189,135 @@ export default function HomePage() {
 
         <section id="pricing" className="py-20 lg:py-24 bg-canvas">
           <div className="max-w-[1280px] mx-auto px-5 sm:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 items-stretch">
-              <div className="rounded-lg bg-testimonial-orange text-on-dark p-8 lg:p-12 flex flex-col justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-white/75 mb-4">Founders and operators</p>
-                  <p className="text-2xl sm:text-[28px] leading-[1.25] font-semibold">
-                    VidyaPlus gives coaching teams one reliable place to understand collections, attendance, student movement, and team accountability.
-                  </p>
-                </div>
-                <p className="mt-8 text-sm font-medium text-white/80">Built for Indian coaching centers scaling beyond spreadsheets.</p>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="mint-card p-8">
-                  <h3 className="text-[28px] leading-[1.25] font-semibold text-ink">Launch</h3>
-                  <p className="mt-2 text-sm text-steel">For small institutes moving from manual workflows.</p>
-                  <p className="mt-6 text-5xl font-semibold font-mono text-ink tracking-[-1.5px]">INR 999</p>
-                  <p className="mt-1 text-xs text-steel">per month</p>
-                  <button onClick={() => navigate(primaryTarget)} className="mint-btn-primary w-full mt-8">Get started</button>
-                </div>
-
-                <div className="bg-canvas rounded-lg p-8 border-2 border-brand-green shadow-[rgba(0,212,164,0.08)_0px_8px_24px]">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[28px] leading-[1.25] font-semibold text-ink">Scale</h3>
-                    <span className="mint-badge">Featured</span>
-                  </div>
-                  <p className="mt-2 text-sm text-steel">For multi-batch teams with staff, reports, and reminders.</p>
-                  <p className="mt-6 text-5xl font-semibold font-mono text-ink tracking-[-1.5px]">Custom</p>
-                  <p className="mt-1 text-xs text-steel">based on institute size</p>
-                  <button onClick={() => navigate('/login')} className="mint-btn-brand w-full mt-8">Talk to us</button>
-                </div>
-              </div>
+            {/* Section Header */}
+            <div className="text-center mb-14">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-steel mb-3">Pricing</p>
+              <h2 className="text-4xl sm:text-[48px] font-semibold tracking-[-1px] text-ink leading-[1.1] mb-4">
+                Simple, transparent pricing
+              </h2>
+              <p className="text-base text-steel max-w-xl mx-auto leading-[1.5]">
+                Start at ₹99/month. Upgrade as you grow. No setup fees. No contracts. Cancel anytime.
+              </p>
             </div>
+
+            {/* Pricing Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading ? (
+                [1, 2, 3].map(i => (
+                  <div key={i} className="mint-card p-8 animate-pulse">
+                    <div className="h-7 bg-surface rounded w-2/5 mb-2" />
+                    <div className="h-3 bg-surface rounded w-1/3 mb-5" />
+                    <div className="h-4 bg-surface rounded w-3/4 mb-8" />
+                    <div className="h-14 bg-surface rounded w-full mb-2" />
+                    <div className="h-3 bg-surface rounded w-1/4 mb-8" />
+                    <div className="h-10 bg-surface rounded-full w-full mb-8" />
+                    <div className="space-y-3">
+                      {[1,2,3,4,5,6].map(j => <div key={j} className="h-3.5 bg-surface rounded w-full" />)}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                plans.map((plan, index) => {
+                  const isFeatured = index === 1;
+                  const planShortName = plan.name.split(' ')[0];
+                  const planTier = plan.name.match(/\(([^)]+)\)/)?.[1] ?? '';
+                  const storageLabel = plan.maxStorageMb >= 1024
+                    ? `${plan.maxStorageMb / 1024} GB storage`
+                    : `${plan.maxStorageMb} MB storage`;
+                  const studentsLabel = plan.maxStudents >= 10000 ? 'Unlimited students' : `Up to ${plan.maxStudents} students`;
+                  const batchesLabel = plan.maxBatches >= 1000 ? 'Unlimited batches' : `${plan.maxBatches} batches`;
+                  const whatsappCredits = plan.featuresJson?.whatsappFree ?? 0;
+
+                  const featuresList: string[] = [
+                    studentsLabel,
+                    batchesLabel,
+                    storageLabel,
+                    'Fee collection & receipts',
+                    index >= 1 ? 'Staff payroll module' : 'Basic attendance tracking',
+                    whatsappCredits > 0 ? `${whatsappCredits} free WhatsApp credits/mo` : 'Help center support',
+                    index >= 1 ? (plan.featuresJson?.support ?? 'Priority support') : null,
+                    index === 2 ? 'Multi-institute dashboard' : null,
+                    index === 2 ? 'Dedicated account manager' : null,
+                  ].filter(Boolean) as string[];
+
+                  const taglines = [
+                    'Perfect for solo tutors just getting started.',
+                    'For growing coaching centers managing multiple batches.',
+                    'For large coaching hubs managing multiple branches.',
+                  ];
+
+                  const ctaLabels = ['Start free trial', 'Get started', 'Talk to sales'];
+
+                  return (
+                    <div
+                      key={plan.id}
+                      className={`relative flex flex-col rounded-lg p-8 transition-all ${
+                        isFeatured
+                          ? 'border-2 border-brand-green bg-canvas shadow-[rgba(0,212,164,0.08)_0px_8px_24px]'
+                          : 'border border-hairline bg-canvas'
+                      }`}
+                    >
+                      {/* Most Popular Badge */}
+                      {isFeatured && (
+                        <div className="absolute top-6 right-6">
+                          <span className="mint-badge">Most Popular</span>
+                        </div>
+                      )}
+
+                      {/* Plan Name & Tier */}
+                      <div className="mb-1">
+                        <h3 className="text-[28px] leading-[1.25] font-semibold text-ink">{planShortName}</h3>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-steel mt-0.5">({planTier})</p>
+                      </div>
+
+                      {/* Tagline */}
+                      <p className="mt-3 text-sm text-steel leading-[1.5]">{taglines[index]}</p>
+
+                      {/* Price */}
+                      <div className="mt-8 mb-8">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-[56px] font-semibold font-mono text-ink tracking-[-1.5px] leading-none">
+                            ₹{Number(plan.priceMonthly).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-[13px] text-steel">/month + GST</p>
+                      </div>
+
+                      {/* CTA Button */}
+                      <button
+                        onClick={() => navigate(index === 2 ? '/login' : `/register?planId=${plan.id}`)}
+                        className={`w-full min-h-[42px] px-5 rounded-full text-sm font-medium transition-colors flex items-center justify-center ${
+                          isFeatured
+                            ? 'bg-brand-green text-primary hover:bg-brand-green-deep'
+                            : 'bg-primary text-on-primary hover:bg-charcoal'
+                        }`}
+                      >
+                        {ctaLabels[index]}
+                      </button>
+
+                      {/* Divider */}
+                      <div className="mt-8 pt-8 border-t border-hairline-soft flex-1">
+                        <ul className="space-y-[10px]">
+                          {featuresList.map((feat) => (
+                            <li key={feat} className="flex items-start gap-2.5">
+                              <CheckCircle2 className="w-4 h-4 text-brand-green flex-shrink-0 mt-0.5" />
+                              <span className="text-sm text-charcoal leading-[1.4]">{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer Note */}
+            <p className="mt-8 text-center text-[13px] text-steel flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-brand-green flex-shrink-0" />
+              All plans include a 14-day free trial. WhatsApp &amp; SMS are charged from wallet at cost.
+            </p>
           </div>
         </section>
 

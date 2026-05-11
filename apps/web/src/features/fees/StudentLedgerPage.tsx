@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 import {
   ArrowLeft, CheckCircle2, Clock, AlertCircle, FileText,
-  CreditCard, Loader2, IndianRupee, Printer, X
+  CreditCard, Loader2, IndianRupee, Printer, X, History, MessageCircle
 } from 'lucide-react';
 
 interface FeeRecord {
@@ -35,7 +35,6 @@ export default function StudentLedgerPage() {
   const [records, setRecords] = useState<FeeRecord[]>([]);
   const [student, setStudent] = useState<any>(null);
   
-  // Payment Modal State
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<FeeRecord | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -46,7 +45,6 @@ export default function StudentLedgerPage() {
   const fetchLedger = async () => {
     setLoading(true);
     try {
-      // First get student details
       const stuRes = await api.get(`/students/${studentId}`);
       setStudent(stuRes.data.data);
 
@@ -88,7 +86,6 @@ export default function StudentLedgerPage() {
         paymentMode,
         referenceNo: referenceNo || undefined,
       });
-      alert(`Payment recorded successfully! Receipt: ${res.data.data.receipt.receiptNumber}`);
       setShowPaymentModal(false);
       fetchLedger();
     } catch (err: any) {
@@ -98,112 +95,126 @@ export default function StudentLedgerPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'paid': return <span className="px-2.5 py-1 bg-accent-50 text-accent-700 text-xs font-medium rounded-full border border-accent-200">Paid</span>;
-      case 'partial': return <span className="px-2.5 py-1 bg-warn-50 text-warn-700 text-xs font-medium rounded-full border border-warn-200">Partial</span>;
-      default: return <span className="px-2.5 py-1 bg-danger-50 text-danger-700 text-xs font-medium rounded-full border border-danger-200">Pending</span>;
-    }
-  };
-
   if (loading && !student) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-brand-green animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate(-1)} className="p-3 bg-white border border-surface-200 rounded-2xl hover:bg-surface-50 text-surface-600 transition-all">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-surface-900">{student?.name}'s Fee Ledger</h1>
-          <p className="text-sm text-surface-500 mt-1">{student?.phone} • {student?.studentProfile?.studentCode}</p>
+    <div className="animate-fade-in space-y-8">
+      {/* Header - Atmospheric Revenue Context */}
+      <div className="hero-backdrop rounded-lg border border-hairline p-8 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <button onClick={() => navigate(-1)} className="p-2.5 text-ink hover:bg-canvas rounded-full transition-all border border-hairline bg-canvas/50 shadow-sm">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-black text-ink tracking-tight uppercase tracking-widest">{student?.name}'s Ledger</h1>
+            <p className="text-[10px] font-black text-slate uppercase tracking-widest mt-1 font-mono">
+              {student?.phone} • {student?.studentProfile?.studentCode}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="mint-btn-secondary h-10 px-4 text-[10px] uppercase tracking-widest">
+            <Printer className="w-3.5 h-3.5" /> Export PDF
+          </button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-3xl shadow-card border border-surface-100 flex items-center gap-4 hover:shadow-premium transition-shadow duration-300">
-          <div className="p-4 rounded-2xl bg-primary-50 text-primary-600"><FileText className="w-6 h-6" /></div>
+      {/* Summary Matrix */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mint-card p-6 flex items-center gap-4 bg-canvas border-hairline">
+          <div className="p-3 rounded-md bg-surface text-brand-tag border border-hairline"><FileText className="w-5 h-5" /></div>
           <div>
-            <p className="text-sm font-medium text-surface-500 mb-1">Total Dues</p>
-            <h3 className="text-3xl font-black text-surface-900">₹{summary.totalDues.toLocaleString()}</h3>
+            <p className="text-[10px] font-black text-slate uppercase tracking-widest mb-1">Total Invoiced</p>
+            <h3 className="text-2xl font-black text-ink font-mono tracking-tighter">₹{summary.totalDues.toLocaleString()}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-card border border-surface-100 flex items-center gap-4 hover:shadow-premium transition-shadow duration-300">
-          <div className="p-4 rounded-2xl bg-accent-50 text-accent-600"><CheckCircle2 className="w-6 h-6" /></div>
+        <div className="mint-card p-6 flex items-center gap-4 bg-canvas border-hairline">
+          <div className="p-3 rounded-md bg-brand-green-soft text-brand-green-deep border border-brand-green/20"><CheckCircle2 className="w-5 h-5" /></div>
           <div>
-            <p className="text-sm font-medium text-surface-500 mb-1">Total Paid</p>
-            <h3 className="text-3xl font-black text-surface-900">₹{summary.totalPaid.toLocaleString()}</h3>
+            <p className="text-[10px] font-black text-slate uppercase tracking-widest mb-1">Collections</p>
+            <h3 className="text-2xl font-black text-brand-green-deep font-mono tracking-tighter">₹{summary.totalPaid.toLocaleString()}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-card border border-danger-200 flex items-center gap-4 hover:shadow-premium transition-shadow duration-300">
-          <div className="p-4 rounded-2xl bg-danger-50 text-danger-600"><AlertCircle className="w-6 h-6" /></div>
+        <div className="mint-card p-6 flex items-center gap-4 bg-canvas border-brand-error/20">
+          <div className="p-3 rounded-md bg-brand-error/10 text-brand-error border border-brand-error/20"><AlertCircle className="w-5 h-5" /></div>
           <div>
-            <p className="text-sm font-medium text-surface-500 mb-1">Outstanding Balance</p>
-            <h3 className="text-3xl font-black text-danger-600">₹{summary.balance.toLocaleString()}</h3>
+            <p className="text-[10px] font-black text-brand-error uppercase tracking-widest mb-1">Net Dues</p>
+            <h3 className="text-2xl font-black text-brand-error font-mono tracking-tighter">₹{summary.balance.toLocaleString()}</h3>
           </div>
         </div>
       </div>
 
-      {/* Fee Records */}
-      <div className="bg-white rounded-3xl shadow-card border border-surface-100 overflow-hidden">
-        <div className="px-6 py-6 border-b border-surface-100">
-          <h3 className="font-semibold text-surface-900">Dues & Payments</h3>
+      {/* High-Density Ledger Table */}
+      <div className="mint-card overflow-hidden bg-canvas">
+        <div className="px-6 py-4 border-b border-hairline bg-surface/30">
+          <h3 className="text-[11px] font-black text-ink uppercase tracking-widest">Transaction Statement</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-50/50 border-b border-surface-100 text-[11px] uppercase tracking-widest text-surface-400 font-bold">
-                <th className="px-6 py-5">Fee Details</th>
-                <th className="px-6 py-5">Status</th>
-                <th className="px-6 py-5">Amount</th>
-                <th className="px-6 py-5 text-right">Balance</th>
-                <th className="px-6 py-5 text-right">Action</th>
+              <tr className="bg-surface/50 border-b border-hairline text-[9px] uppercase tracking-widest text-slate font-black">
+                <th className="px-6 py-4">Fee Description</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Invoice</th>
+                <th className="px-6 py-4 text-right">Balance</th>
+                <th className="px-6 py-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-100">
+            <tbody className="divide-y divide-hairline">
               {records.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-12 text-center text-surface-500">No fee records found.</td></tr>
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-slate text-xs">No transaction history available.</td></tr>
               ) : (
                 records.map((record) => (
-                  <tr key={record.id} className="hover:bg-surface-50/50 transition-colors">
+                  <tr key={record.id} className="hover:bg-surface/30 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-medium text-surface-900">{record.planName} <span className="text-surface-400 text-sm">({record.periodLabel})</span></p>
-                      <p className="text-xs text-surface-500 mt-1 flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> Due: {new Date(record.dueDate).toLocaleDateString()}
-                      </p>
-                      {/* Payment History Sub-list */}
-                      {record.payments.length > 0 && (
-                        <div className="mt-3 space-y-2 border-t border-surface-100 pt-2">
-                          {record.payments.map(p => (
-                            <div key={p.id} className="flex items-center gap-3 text-xs text-surface-600 bg-surface-50 p-2 rounded-lg">
-                              <span className="font-semibold text-accent-600">+₹{p.amount.toLocaleString()}</span>
-                              <span>• {p.mode.toUpperCase()}</span>
-                              <span>• {p.date}</span>
-                              <button onClick={() => navigate(`/fees/receipt/${p.receiptNumber}`)}
-                                className="ml-auto text-primary-600 hover:underline flex items-center gap-1">
-                                <Printer className="w-3 h-3" /> {p.receiptNumber}
-                              </button>
-                            </div>
-                          ))}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-ink">{record.planName}</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="mint-badge !rounded-md px-1.5 py-0.5 text-[9px] bg-surface text-steel">
+                            {record.periodLabel}
+                          </span>
+                          <span className="text-[9px] text-slate font-mono uppercase">Due: {new Date(record.dueDate).toLocaleDateString()}</span>
                         </div>
-                      )}
+                        
+                        {/* Compact Payout History */}
+                        {record.payments.length > 0 && (
+                          <div className="mt-3 space-y-1">
+                            {record.payments.map(p => (
+                              <div key={p.id} className="flex items-center gap-3 text-[9px] text-brand-green-deep bg-brand-green-soft px-2 py-1 rounded-md border border-brand-green/10 max-w-fit">
+                                <span className="font-black font-mono">+₹{p.amount.toLocaleString()}</span>
+                                <span className="uppercase tracking-widest font-black opacity-60">{p.mode}</span>
+                                <span className="opacity-60 font-mono">{p.date}</span>
+                                <button onClick={() => navigate(`/fees/receipt/${p.receiptNumber}`)}
+                                  className="text-ink hover:underline font-black uppercase tracking-tighter border-l border-brand-green/20 pl-2">
+                                  #{p.receiptNumber}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 align-top pt-5">{getStatusBadge(record.status)}</td>
-                    <td className="px-6 py-4 align-top pt-5 text-sm font-medium text-surface-900">₹{record.amount.toLocaleString()}</td>
-                    <td className="px-6 py-4 align-top pt-5 text-sm font-bold text-danger-600 text-right">₹{record.balance.toLocaleString()}</td>
+                    <td className="px-6 py-4 align-top pt-5">
+                      <span className={`mint-badge !rounded-md px-1.5 py-0.5 text-[9px] ${
+                        record.status === 'paid' ? 'bg-brand-green-soft text-brand-green-deep border-brand-green/20' :
+                        'bg-brand-error/10 text-brand-error border-brand-error/20'
+                      }`}>
+                        {record.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 align-top pt-5 text-sm font-black text-ink font-mono tracking-tighter">₹{record.amount.toLocaleString()}</td>
+                    <td className="px-6 py-4 align-top pt-5 text-sm font-black text-brand-error font-mono tracking-tighter text-right">₹{record.balance.toLocaleString()}</td>
                     <td className="px-6 py-4 align-top pt-4 text-right">
                       {record.balance > 0 && (
                         <button onClick={() => handlePay(record)}
-                          className="px-5 py-3 bg-primary-50 text-primary-700 text-sm font-bold rounded-2xl hover:bg-primary-100 transition-all flex items-center gap-2 ml-auto active:scale-95">
-                          <IndianRupee className="w-4 h-4" /> Collect
+                          className="mint-btn-primary px-4 py-2 text-[9px] uppercase tracking-widest ml-auto">
+                          <IndianRupee className="w-3 h-3" /> Collect
                         </button>
                       )}
                     </td>
@@ -217,66 +228,57 @@ export default function StudentLedgerPage() {
 
       {/* Payment Modal */}
       {showPaymentModal && selectedRecord && (
-        <div className="fixed inset-0 z-50 bg-surface-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-modal w-full max-w-md overflow-hidden animate-slide-up">
-            <div className="px-8 py-6 border-b border-surface-100 flex items-center justify-between">
-              <h3 className="font-bold text-surface-900 flex items-center gap-2 text-xl">
-                <CreditCard className="w-6 h-6 text-primary-500" /> Record Payment
-              </h3>
-              <button onClick={() => setShowPaymentModal(false)} className="p-2 text-surface-400 hover:text-surface-700 hover:bg-surface-100 rounded-xl transition-all">
-                <X className="w-6 h-6" />
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-ink/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowPaymentModal(false)}>
+          <div className="w-full max-w-md bg-canvas rounded-lg shadow-premium p-10 animate-slide-up border border-hairline" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-xl font-black text-ink tracking-tight uppercase tracking-widest">Post Receipt</h2>
+              <button onClick={() => setShowPaymentModal(false)} className="p-2 text-steel hover:text-ink hover:bg-surface rounded-full transition-all">
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-8 space-y-6">
-              <div className="bg-surface-50 p-5 rounded-2xl border border-surface-100 mb-4">
-                <p className="text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Fee Plan</p>
-                <p className="font-medium text-surface-900">{selectedRecord.planName} ({selectedRecord.periodLabel})</p>
-                <div className="flex justify-between mt-4 pt-4 border-t border-surface-200/60 text-sm">
-                  <span className="text-surface-600 font-medium">Outstanding Balance:</span>
-                  <span className="font-bold text-danger-600">₹{selectedRecord.balance.toLocaleString()}</span>
+
+            <div className="space-y-6">
+              <div className="mint-card p-4 bg-surface/30 border-hairline">
+                <p className="text-[9px] font-black text-slate uppercase tracking-widest mb-1">Target Statement</p>
+                <p className="text-sm font-black text-ink">{selectedRecord.planName} ({selectedRecord.periodLabel})</p>
+                <div className="flex justify-between mt-3 pt-3 border-t border-hairline">
+                  <span className="text-[9px] font-black text-slate uppercase tracking-widest">Statement Balance:</span>
+                  <span className="text-[11px] font-black text-brand-error font-mono">₹{selectedRecord.balance.toLocaleString()}</span>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Amount Paying</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <IndianRupee className="w-5 h-5 text-surface-400" />
-                  </div>
-                  <input type="number" min="1" max={selectedRecord.balance} step="0.01"
-                    value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all" />
-                </div>
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Receipt Value (₹)</label>
+                <input type="number" min="1" max={selectedRecord.balance} step="0.01"
+                  value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)}
+                  className="mint-input w-full h-12 font-mono text-lg" />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Payment Mode</label>
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Receipt Channel</label>
                 <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all appearance-none cursor-pointer">
+                  className="mint-input w-full h-12 uppercase font-black tracking-widest">
                   <option value="cash">Cash</option>
                   <option value="upi">UPI</option>
-                  <option value="bank">Bank Transfer / NEFT</option>
+                  <option value="bank">Bank Transfer</option>
                   <option value="cheque">Cheque</option>
                 </select>
               </div>
 
               {paymentMode !== 'cash' && (
-                <div>
-                  <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Reference No.</label>
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Transaction Ref.</label>
                   <input type="text" value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)}
-                    className="w-full px-5 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all" 
-                    placeholder="Txn ID / Cheque No" />
+                    className="mint-input w-full h-12 font-mono" placeholder="TXN982..." />
                 </div>
               )}
-            </div>
-            
-            <div className="px-8 py-5 border-t border-surface-100 bg-surface-50/50 flex justify-end gap-3">
-              <button onClick={() => setShowPaymentModal(false)}
-                className="px-5 py-3 rounded-2xl text-sm font-bold text-surface-600 hover:bg-surface-100 transition-all">Cancel</button>
-              <button onClick={submitPayment} disabled={processing}
-                className="flex items-center gap-2 px-8 py-3 bg-primary-600 text-white rounded-2xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 shadow-lg shadow-primary-500/25 active:scale-[0.98] transition-all">
-                {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />} Record Payment
-              </button>
+
+              <div className="pt-6">
+                <button onClick={submitPayment} disabled={processing}
+                  className="mint-btn-brand w-full h-14 text-xs tracking-[0.2em] uppercase shadow-lg shadow-brand-green/10">
+                  {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />} Commit Payment
+                </button>
+              </div>
             </div>
           </div>
         </div>

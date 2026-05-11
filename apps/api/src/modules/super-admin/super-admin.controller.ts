@@ -535,4 +535,53 @@ export const superAdminController = {
       res.status(500).json({ success: false, error: 'Failed to update plan' });
     }
   },
+
+  // ---------- Delete Plan ----------
+  async deletePlan(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const plan = await prisma.plan.findUnique({
+        where: { id },
+        include: { _count: { select: { institutes: true } } }
+      });
+
+      if (!plan) {
+        res.status(404).json({ success: false, error: 'Plan not found', code: 'NOT_FOUND' });
+        return;
+      }
+
+      // Safety Check: Standard Practice is to block deletion if institutes are using it
+      if (plan._count.institutes > 0) {
+        res.status(400).json({
+          success: false,
+          error: `Cannot delete plan "${plan.name}" because it is currently being used by ${plan._count.institutes} institutes.`,
+          code: 'PLAN_IN_USE',
+          details: { count: plan._count.institutes }
+        });
+        return;
+      }
+
+      // Perform deletion
+      await prisma.plan.delete({ where: { id } });
+
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          userId: req.user!.userId,
+          action: 'plan.delete',
+          entityType: 'plan',
+          entityId: id,
+          beforeJson: { name: plan.name, priceMonthly: plan.priceMonthly },
+          ipAddress: req.ip,
+        },
+      });
+
+      logger.info(`Plan deleted: ${plan.name} (${id})`);
+      res.json({ success: true, message: 'Plan deleted successfully' });
+    } catch (error: any) {
+      logger.error('Failed to delete plan', { error: error.message });
+      res.status(500).json({ success: false, error: 'Failed to delete plan' });
+    }
+  },
 };

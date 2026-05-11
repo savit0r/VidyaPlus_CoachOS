@@ -17,6 +17,7 @@ import notificationRoutes from './modules/notifications/notification.routes';
 import reportRoutes from './modules/reports/report.routes';
 import settingsRoutes from './modules/institute-settings/settings.routes';
 import walletRoutes from './modules/wallet/wallet.routes';
+import publicRoutes from './modules/public/public.routes';
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.get('/api/health', (_req, res) => {
 
 // API Routes
 app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/super-admin', superAdminRoutes);
 app.use('/api/v1/students', studentRoutes);
 app.use('/api/v1/batches', batchRoutes);

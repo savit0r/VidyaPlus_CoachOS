@@ -5,6 +5,7 @@ import { ProtectedRoute, PublicOnlyRoute } from './components/RouteGuards';
 import OwnerLayout from './components/OwnerLayout';
 import HomePage from './features/marketing/HomePage';
 import LoginPage from './features/auth/LoginPage';
+import RegisterPage from './features/auth/RegisterPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import StudentsPage from './features/students/StudentsPage';
 import BatchesPage from './features/batches/BatchesPage';
@@ -45,6 +46,7 @@ export default function App() {
         {/* Public routes */}
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Route>
 
         {/* Protected routes with Owner layout */}

@@ -6,9 +6,27 @@ import {
 } from 'lucide-react';
 
 const STATUS_CONFIG = {
-  present: { label: 'P', color: 'bg-accent-500 text-white', ring: 'ring-accent-500', icon: CheckCircle2 },
-  absent: { label: 'A', color: 'bg-danger-500 text-white', ring: 'ring-danger-500', icon: XCircle },
-  late: { label: 'L', color: 'bg-warn-500 text-white', ring: 'ring-warn-500', icon: Clock },
+  present: { 
+    label: 'P', 
+    active: 'bg-emerald-600 text-white shadow-emerald-200', 
+    inactive: 'bg-emerald-50 text-emerald-400 hover:bg-emerald-100 hover:text-emerald-600', 
+    ring: 'ring-emerald-500', 
+    icon: CheckCircle2 
+  },
+  absent: { 
+    label: 'A', 
+    active: 'bg-rose-600 text-white shadow-rose-200', 
+    inactive: 'bg-rose-50 text-rose-400 hover:bg-rose-100 hover:text-rose-600', 
+    ring: 'ring-rose-500', 
+    icon: XCircle 
+  },
+  late: { 
+    label: 'L', 
+    active: 'bg-amber-600 text-white shadow-amber-200', 
+    inactive: 'bg-amber-50 text-amber-400 hover:bg-amber-100 hover:text-amber-600', 
+    ring: 'ring-amber-500', 
+    icon: Clock 
+  },
 } as const;
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -51,7 +69,6 @@ export default function AttendancePage() {
       const { data } = await api.get(`/attendance/batch/${selectedBatch}`, { params: { date: selectedDate } });
       setStudents(data.data.students);
       setSummary(data.data.summary);
-      // Initialize attendance map from existing records
       const map: Record<string, string> = {};
       data.data.students.forEach((s: StudentRow) => {
         if (s.status) map[s.userId] = s.status;
@@ -75,15 +92,6 @@ export default function AttendancePage() {
 
   useEffect(() => { fetchCalendar(); }, [fetchCalendar]);
 
-  // Toggle attendance status
-  const cycleStatus = (userId: string) => {
-    const current = attendance[userId];
-    const next = !current ? 'present' : current === 'present' ? 'absent' : current === 'absent' ? 'late' : 'present';
-    setAttendance(prev => ({ ...prev, [userId]: next }));
-    setSaved(false);
-  };
-
-  // Mark all as present
   const markAllPresent = () => {
     const map: Record<string, string> = {};
     students.forEach(s => { map[s.userId] = 'present'; });
@@ -91,7 +99,6 @@ export default function AttendancePage() {
     setSaved(false);
   };
 
-  // Save attendance
   const handleSave = async () => {
     if (!selectedBatch) return;
     setSaving(true);
@@ -103,12 +110,10 @@ export default function AttendancePage() {
       fetchAttendance();
       fetchCalendar();
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Failed to save';
-      alert(msg);
+      alert(err.response?.data?.error || 'Failed to save');
     } finally { setSaving(false); }
   };
 
-  // Calendar rendering
   const renderCalendar = () => {
     const firstDay = new Date(calendarYear, calendarMonth - 1, 1).getDay();
     const daysInMonth = new Date(calendarYear, calendarMonth, 0).getDate();
@@ -121,11 +126,11 @@ export default function AttendancePage() {
       const isToday = dateStr === new Date().toISOString().split('T')[0];
       const isSelected = dateStr === selectedDate;
 
-      let bg = 'bg-surface-100 text-surface-400';
+      let bg = 'bg-slate-50 text-slate-400';
       if (holiday) bg = 'bg-purple-50 text-purple-600';
       else if (data) {
         const rate = data.total > 0 ? (data.present + data.late) / data.total : 0;
-        bg = rate >= 0.9 ? 'bg-accent-100 text-accent-700' : rate >= 0.7 ? 'bg-warn-100 text-warn-700' : 'bg-danger-100 text-danger-700';
+        bg = rate >= 0.9 ? 'bg-emerald-100 text-emerald-700' : rate >= 0.7 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700';
       }
 
       cells.push(
@@ -146,29 +151,27 @@ export default function AttendancePage() {
     <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Attendance</h1>
-          <p className="text-sm text-surface-500 mt-1">Mark and track daily attendance</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Attendance</h1>
+          <p className="text-sm text-slate-500 mt-1">Mark and track daily attendance</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column — Marking Panel */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Batch + Date Selectors */}
-          <div className="bg-white rounded-3xl shadow-card p-6 border border-surface-100">
+          <div className="bg-white rounded-3xl shadow-premium p-6 border border-slate-100">
             <div className="flex gap-4 items-end">
               <div className="flex-1">
-                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Batch</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Batch</label>
                 <select value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all appearance-none cursor-pointer">
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-primary-500 outline-none transition-all appearance-none cursor-pointer">
                   {batches.length === 0 && <option>No batches found</option>}
                   {batches.map(b => <option key={b.id} value={b.id}>{b.name} {b.subject ? `(${b.subject})` : ''}</option>)}
                 </select>
               </div>
               <div className="w-48">
-                <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Date</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Date</label>
                 <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all" />
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-primary-500 outline-none transition-all" />
               </div>
               <button onClick={markAllPresent}
                 className="px-6 py-3 rounded-2xl text-sm font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 transition-all whitespace-nowrap active:scale-95">
@@ -177,74 +180,79 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          {/* Summary Bar */}
           {summary && !loading && (
             <div className="flex gap-4">
               {[
-                { label: 'Total', value: summary.total, color: 'bg-surface-100 text-surface-600' },
-                { label: 'Present', value: summary.present, color: 'bg-accent-50 text-accent-600' },
-                { label: 'Absent', value: summary.absent, color: 'bg-danger-50 text-danger-600' },
-                { label: 'Late', value: summary.late, color: 'bg-warn-50 text-warn-600' },
-                { label: 'Unmarked', value: summary.unmarked, color: 'bg-surface-50 text-surface-500' },
+                { label: 'Total', value: summary.total, color: 'bg-slate-100 text-slate-600' },
+                { label: 'Present', value: summary.present, color: 'bg-emerald-50 text-emerald-700' },
+                { label: 'Absent', value: summary.absent, color: 'bg-rose-50 text-rose-700' },
+                { label: 'Late', value: summary.late, color: 'bg-amber-50 text-amber-700' },
+                { label: 'Unmarked', value: summary.unmarked, color: 'bg-slate-50 text-slate-400' },
               ].map(s => (
-                <div key={s.label} className={`flex-1 rounded-2xl px-4 py-3 text-center ${s.color}`}>
+                <div key={s.label} className={`flex-1 rounded-2xl px-4 py-3 text-center transition-all ${s.color}`}>
                   <p className="text-2xl font-bold">{s.value}</p>
-                  <p className="text-[11px] font-bold uppercase tracking-widest opacity-80">{s.label}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Student List */}
-          <div className="bg-white rounded-3xl shadow-card border border-surface-100 overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-premium border border-slate-100 overflow-hidden">
             {loading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-6 h-6 text-primary-500 animate-spin" />
               </div>
             ) : students.length === 0 ? (
-              <div className="py-16 text-center">
-                <Users className="w-12 h-12 text-surface-300 mx-auto mb-3" />
-                <p className="text-surface-500 font-medium">No students enrolled</p>
-                <p className="text-sm text-surface-400 mt-1">Enroll students in this batch first</p>
+              <div className="py-20 text-center flex flex-col items-center">
+                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-slate-300">
+                  <Users className="w-8 h-8" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">No students enrolled</h3>
+                <p className="text-sm text-slate-500 mt-1">Add students to this batch to start tracking.</p>
               </div>
             ) : (
               <>
                 {isAllLocked && (
-                  <div className="flex items-center gap-2 px-6 py-4 bg-warn-50 border-b border-warn-200 text-warn-600 text-sm font-medium">
+                  <div className="flex items-center gap-3 px-6 py-4 bg-amber-50 border-b border-amber-100 text-amber-700 text-xs font-bold uppercase tracking-wider">
                     <Lock className="w-4 h-4" /> Attendance is locked for this date
                   </div>
                 )}
-                <div className="divide-y divide-surface-100">
+                <div className="divide-y divide-slate-50">
                   {students.map(student => {
                     const currentStatus = attendance[student.userId];
-                    const config = currentStatus ? STATUS_CONFIG[currentStatus as keyof typeof STATUS_CONFIG] : null;
                     return (
                       <div key={student.userId}
-                        className={`flex items-center justify-between px-6 py-4 transition-colors ${currentStatus ? 'bg-surface-50/50' : ''}`}>
+                        className={`flex items-center justify-between px-8 py-5 transition-all ${currentStatus ? 'bg-slate-50/30' : ''}`}>
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-sm font-bold">
+                          <div className="w-12 h-12 rounded-2xl bg-primary-50 border border-primary-100 flex items-center justify-center text-primary-700 text-base font-black shadow-sm overflow-hidden">
                             {student.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-surface-900">{student.name}</p>
-                            <p className="text-xs text-surface-500 mt-0.5">{student.studentCode}</p>
+                            <p className="text-sm font-bold text-slate-900">{student.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{student.studentCode}</span>
+                              {student.isLocked && <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">Locked</span>}
+                            </div>
                           </div>
                         </div>
 
-                        {/* Status Toggle Buttons */}
-                        <div className="flex items-center gap-2">
-                          {student.isLocked && <Lock className="w-4 h-4 text-surface-400 mr-1" />}
+                        <div className="flex items-center gap-2.5">
                           {(['present', 'absent', 'late'] as const).map(status => {
                             const sc = STATUS_CONFIG[status];
                             const isActive = currentStatus === status;
+                            const Icon = sc.icon;
                             return (
                               <button key={status} onClick={() => !student.isLocked && setAttendance(prev => ({ ...prev, [student.userId]: status }))}
                                 disabled={student.isLocked}
-                                className={`w-11 h-11 rounded-2xl text-xs font-bold transition-all shadow-sm ${
-                                  isActive ? `${sc.color} ring-2 ${sc.ring} ring-offset-2 scale-105` : 'bg-surface-100 text-surface-400 hover:bg-surface-200 active:scale-95'
-                                } ${student.isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                title={status.charAt(0).toUpperCase() + status.slice(1)}>
-                                {sc.label}
+                                className={`group relative w-12 h-12 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center ${
+                                  isActive 
+                                    ? `${sc.active} ring-4 ${sc.ring}/20 scale-110 z-10 shadow-lg` 
+                                    : `${sc.inactive} border border-transparent`
+                                } ${student.isLocked ? 'opacity-30 cursor-not-allowed grayscale' : 'cursor-pointer active:scale-90'}`}
+                                title={status.toUpperCase()}
+                              >
+                                {isActive ? <Icon className="w-5 h-5" /> : sc.label}
+                                {isActive && <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center shadow-sm"><div className={`w-1.5 h-1.5 rounded-full ${sc.active.split(' ')[0]}`} /></div>}
                               </button>
                             );
                           })}
@@ -254,13 +262,12 @@ export default function AttendancePage() {
                   })}
                 </div>
 
-                {/* Save Button */}
-                <div className="px-6 py-5 border-t border-surface-100 bg-surface-50/50 flex items-center justify-between">
-                  <p className="text-sm font-medium text-surface-500">{markedCount}/{students.length} marked</p>
+                <div className="px-6 py-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <p className="text-sm font-bold text-slate-500">{markedCount}/{students.length} marked</p>
                   <div className="flex items-center gap-4">
-                    {saved && <span className="text-sm font-bold text-accent-600 flex items-center gap-1.5"><CheckCircle2 className="w-5 h-5" /> Saved!</span>}
+                    {saved && <span className="text-sm font-bold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 className="w-5 h-5" /> Saved!</span>}
                     <button onClick={handleSave} disabled={saving || markedCount === 0 || isAllLocked}
-                      className="px-8 py-3 rounded-2xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-primary-500/25 active:scale-[0.98] transition-all">
+                      className="px-8 py-3 rounded-2xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2 shadow-xl shadow-slate-900/10 active:scale-[0.98] transition-all">
                       {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><CheckCircle2 className="w-5 h-5" /> Save Attendance</>}
                     </button>
                   </div>
@@ -270,36 +277,32 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        {/* Right Column — Calendar Heatmap */}
         <div className="space-y-4">
-          <div className="bg-white rounded-3xl shadow-card p-6 border border-surface-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-surface-900">Calendar</h3>
+          <div className="bg-white rounded-3xl shadow-premium p-6 border border-slate-100">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Calendar</h3>
               <div className="flex items-center gap-1">
                 <button onClick={() => { if (calendarMonth === 1) { setCalendarMonth(12); setCalendarYear(y => y - 1); } else { setCalendarMonth(m => m - 1); } }}
-                  className="p-1 rounded hover:bg-surface-100"><ChevronLeft className="w-4 h-4 text-surface-400" /></button>
-                <span className="text-sm font-medium text-surface-700 w-28 text-center">{MONTHS[calendarMonth - 1]} {calendarYear}</span>
+                  className="p-1.5 rounded-lg hover:bg-slate-50 transition-colors"><ChevronLeft className="w-4 h-4 text-slate-400" /></button>
+                <span className="text-xs font-black text-slate-700 w-28 text-center uppercase tracking-widest">{MONTHS[calendarMonth - 1]} {calendarYear}</span>
                 <button onClick={() => { if (calendarMonth === 12) { setCalendarMonth(1); setCalendarYear(y => y + 1); } else { setCalendarMonth(m => m + 1); } }}
-                  className="p-1 rounded hover:bg-surface-100"><ChevronRight className="w-4 h-4 text-surface-400" /></button>
+                  className="p-1.5 rounded-lg hover:bg-slate-50 transition-colors"><ChevronRight className="w-4 h-4 text-slate-400" /></button>
               </div>
             </div>
 
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-1">
-              {WEEKDAYS.map(d => <div key={d} className="text-center text-xs text-surface-400 font-medium py-1">{d}</div>)}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {WEEKDAYS.map(d => <div key={d} className="text-center text-[10px] text-slate-400 font-black uppercase tracking-widest py-1">{d}</div>)}
             </div>
 
-            {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1">
               {renderCalendar()}
             </div>
 
-            {/* Legend */}
-            <div className="flex items-center gap-3 mt-4 text-xs text-surface-500">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-accent-200" /> &gt;90%</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-warn-200" /> 70-90%</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-danger-200" /> &lt;70%</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-purple-200" /> Holiday</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-6 pt-6 border-t border-slate-50 text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-emerald-100" /> &gt;90%</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-amber-100" /> 70-90%</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-rose-100" /> &lt;70%</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-purple-100" /> Holiday</span>
             </div>
           </div>
         </div>

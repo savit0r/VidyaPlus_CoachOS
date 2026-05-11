@@ -8,10 +8,6 @@ import {
 const FREQUENCY_LABELS: Record<string, string> = {
   monthly: 'Monthly', quarterly: 'Quarterly', course: 'One-time Course', installment: 'Installment',
 };
-const FREQUENCY_COLORS: Record<string, string> = {
-  monthly: 'bg-primary-50 text-primary-700', quarterly: 'bg-accent-50 text-accent-700',
-  course: 'bg-warn-50 text-warn-700', installment: 'bg-purple-50 text-purple-700',
-};
 
 interface FeePlan {
   id: string; name: string; amount: string; frequency: string; dueDay: number | null;
@@ -35,58 +31,66 @@ export default function FeePlansPage() {
   useEffect(() => { fetchPlans(); }, [fetchPlans]);
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+    <div className="animate-fade-in space-y-8">
+      <div className="flex items-center justify-between border-b border-hairline pb-8">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Fee Plans</h1>
-          <p className="text-sm text-surface-500 mt-1">Define fee structures for your students</p>
+          <h1 className="text-2xl font-black text-ink tracking-tight">Fee Structures</h1>
+          <p className="text-sm text-slate mt-1">Configure revenue models for courses and batches.</p>
         </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white text-sm bg-primary-600 hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/25 active:scale-[0.98]">
-          <Plus className="w-5 h-5" /> Create Fee Plan
+          className="mint-btn-primary px-6 py-2.5 text-xs uppercase tracking-widest">
+          <Plus className="w-4 h-4" /> Create Plan
         </button>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-card p-5 animate-pulse">
-              <div className="h-5 w-36 bg-surface-100 rounded mb-3" />
-              <div className="h-8 w-28 bg-surface-100 rounded mb-3" />
-              <div className="h-4 w-20 bg-surface-100 rounded" />
-            </div>
+            <div key={i} className="mint-card h-48 animate-pulse bg-surface/50" />
           ))}
         </div>
       ) : feePlans.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-card p-16 text-center">
-          <IndianRupee className="w-12 h-12 text-surface-300 mx-auto mb-3" />
-          <p className="text-surface-500 font-medium">No fee plans yet</p>
-          <p className="text-surface-400 text-sm mt-1">Create fee plans to track student payments</p>
-          <button onClick={() => setShowModal(true)} className="mt-4 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-            <Plus className="w-4 h-4 inline mr-1" /> Create Fee Plan
+        <div className="mint-card p-20 text-center border-dashed">
+          <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-6">
+            <IndianRupee className="w-8 h-8 text-stone" />
+          </div>
+          <h3 className="text-base font-black text-ink uppercase tracking-widest">No Active Plans</h3>
+          <p className="text-xs text-slate mt-2 max-w-xs mx-auto">Create your first fee plan to start collecting payments from students.</p>
+          <button onClick={() => setShowModal(true)} className="mt-8 text-brand-green font-black text-xs uppercase tracking-widest hover:underline">
+            + New Fee Structure
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {feePlans.map(fp => (
-            <div key={fp.id} className="bg-white rounded-3xl shadow-card p-6 hover:shadow-premium transition-shadow duration-300 border border-surface-100">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-surface-900">{fp.name}</h3>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${FREQUENCY_COLORS[fp.frequency] || 'bg-surface-100 text-surface-600'}`}>
+            <div key={fp.id} className="mint-card p-6 group hover:border-brand-green transition-all bg-canvas">
+              <div className="flex items-start justify-between mb-4">
+                <h3 className="text-base font-black text-ink tracking-tight">{fp.name}</h3>
+                <span className="mint-badge !rounded-md px-1.5 py-0.5 text-[9px] bg-brand-green-soft text-brand-green-deep border-brand-green/20">
                   {FREQUENCY_LABELS[fp.frequency] || fp.frequency}
                 </span>
               </div>
 
-              <p className="text-3xl font-black text-surface-900 mb-1">
-                ₹{Number(fp.amount).toLocaleString()}
-                <span className="text-sm font-medium text-surface-400">/{fp.frequency}</span>
-              </p>
+              <div className="mb-6">
+                <p className="text-3xl font-black text-ink font-mono tracking-tighter">
+                  ₹{Number(fp.amount).toLocaleString()}
+                </p>
+                <p className="text-[10px] font-black text-slate uppercase tracking-widest mt-1">Per {fp.frequency} Cycle</p>
+              </div>
 
-              {fp.description && <p className="text-sm text-surface-500 mb-3">{fp.description}</p>}
+              {fp.description && <p className="text-xs text-slate mb-6 line-clamp-2">{fp.description}</p>}
 
-              <div className="flex items-center gap-4 text-xs text-surface-500 pt-3 border-t border-surface-100">
-                <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{fp.activeStudents} students</span>
-                {fp.dueDay && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />Due on {fp.dueDay}{fp.dueDay === 1 ? 'st' : fp.dueDay === 2 ? 'nd' : fp.dueDay === 3 ? 'rd' : 'th'}</span>}
+              <div className="flex items-center gap-6 pt-5 border-t border-hairline">
+                <div className="flex items-center gap-2">
+                  <Users className="w-3.5 h-3.5 text-brand-tag" />
+                  <span className="text-[10px] font-black text-ink font-mono">{fp.activeStudents}</span>
+                </div>
+                {fp.dueDay && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-brand-tag" />
+                    <span className="text-[10px] font-black text-ink uppercase tracking-widest">Day {fp.dueDay}</span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -98,9 +102,6 @@ export default function FeePlansPage() {
   );
 }
 
-// ============================================
-// Create Fee Plan Modal
-// ============================================
 function CreateFeePlanModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({ name: '', amount: '', frequency: 'monthly', dueDay: '5', description: '' });
   const [loading, setLoading] = useState(false);
@@ -129,59 +130,64 @@ function CreateFeePlanModal({ onClose, onCreated }: { onClose: () => void; onCre
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-modal p-8 animate-fade-in" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-surface-900">Create Fee Plan</h2>
-          <button onClick={onClose} className="p-2 rounded-xl text-surface-400 hover:text-surface-700 hover:bg-surface-100"><X className="w-6 h-6" /></button>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-ink/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-canvas rounded-lg shadow-premium p-10 animate-slide-up border border-hairline" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-10">
+          <h2 className="text-xl font-black text-ink tracking-tight uppercase tracking-widest">Configure Plan</h2>
+          <button onClick={onClose} className="p-2 text-steel hover:text-ink hover:bg-surface rounded-full transition-all">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {error && <div className="mb-4 px-4 py-3 bg-danger-50 border border-danger-200 rounded-xl text-danger-600 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4" />{error}</div>}
+        {error && (
+          <div className="mb-6 p-4 bg-brand-error/10 border border-brand-error/20 rounded-md text-brand-error text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" /> {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Plan Name *</label>
-            <input name="name" value={form.name} onChange={handleChange} required placeholder="e.g. Monthly Tuition"
-              className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all" />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Plan Identifier</label>
+            <input name="name" value={form.name} onChange={handleChange} required placeholder="e.g. ADVANCED_BATCH_MONTHLY"
+              className="mint-input w-full h-12" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Amount (₹) *</label>
-              <input name="amount" type="number" value={form.amount} onChange={handleChange} required placeholder="2500" min="0" step="0.01"
-                className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all" />
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Value (₹)</label>
+              <input name="amount" type="number" value={form.amount} onChange={handleChange} required placeholder="0.00" min="0" step="0.01"
+                className="mint-input w-full h-12 font-mono" />
             </div>
-            <div>
-              <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Frequency *</label>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Billing Loop</label>
               <select name="frequency" value={form.frequency} onChange={handleChange}
-                className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-700 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all appearance-none cursor-pointer">
+                className="mint-input w-full h-12 uppercase tracking-widest font-black">
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
-                <option value="course">One-time Course</option>
+                <option value="course">One-time</option>
                 <option value="installment">Installment</option>
               </select>
             </div>
           </div>
 
           {(form.frequency === 'monthly' || form.frequency === 'quarterly') && (
-            <div>
-              <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Due Day of Month</label>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Due Cycle Day</label>
               <input name="dueDay" type="number" value={form.dueDay} onChange={handleChange} min="1" max="31"
-                className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all" />
+                className="mint-input w-full h-12 font-mono" />
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Description</label>
-            <textarea name="description" value={form.description} onChange={handleChange} rows={2} placeholder="Optional description..."
-              className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none" />
+          <div className="space-y-2">
+            <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Documentation</label>
+            <textarea name="description" value={form.description} onChange={handleChange} rows={2} placeholder="Summary of coverage..."
+              className="mint-input w-full h-24 py-3 resize-none" />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-surface-100 mt-6">
-            <button type="button" onClick={onClose} className="px-5 py-3 rounded-2xl text-sm font-bold text-surface-600 hover:bg-surface-100 transition-all">Cancel</button>
+          <div className="pt-6">
             <button type="submit" disabled={loading}
-              className="px-8 py-3 rounded-2xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-primary-500/25 active:scale-[0.98]">
-              {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Creating...</> : <><CheckCircle2 className="w-5 h-5" /> Create Plan</>}
+              className="mint-btn-primary w-full h-14 text-xs tracking-[0.2em] uppercase shadow-lg shadow-brand-green/10">
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />} Deploy Fee Plan
             </button>
           </div>
         </form>
