@@ -70,7 +70,7 @@ export const authService = {
         email,
         status: 'active',
         deletedAt: null,
-        role: { notIn: ['student', 'parent'] },
+        role: 'owner',
       },
       include: { institute: true },
     });
@@ -136,6 +136,120 @@ export const authService = {
         instituteId: user.instituteId,
         instituteName: user.institute?.name || null,
         permissions,
+      },
+    };
+  },
+
+  /**
+   * Login with email + password (for Staff/Teacher/Accountant portal)
+   */
+  async loginStaff(email: string, password: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        status: 'active',
+        deletedAt: null,
+        role: { in: ['teacher', 'accountant', 'staff'] },
+      },
+      include: { institute: true },
+    });
+
+    if (!user || !user.passwordHash) {
+      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
+      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
+    }
+
+    if (user.institute && user.institute.status !== 'active') {
+      throw Object.assign(new Error('Your institute account is suspended. Please contact support.'), {
+        statusCode: 403,
+        code: 'INSTITUTE_SUSPENDED',
+      });
+    }
+
+    const permissions = (user.permissionsJson as Permission[]).length > 0
+      ? (user.permissionsJson as Permission[])
+      : (DEFAULT_ROLE_PERMISSIONS[user.role] || []);
+
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    logger.info(`Staff logged in: ${user.email} (${user.role})`);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        role: user.role,
+        instituteId: user.instituteId,
+        instituteName: user.institute?.name || null,
+        permissions,
+      },
+    };
+  },
+
+  /**
+   * Login with email + password (for Student portal)
+   */
+  async loginStudent(email: string, password: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        status: 'active',
+        deletedAt: null,
+        role: 'student',
+      },
+      include: { institute: true },
+    });
+
+    if (!user || !user.passwordHash) {
+      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
+      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
+    }
+
+    if (user.institute && user.institute.status !== 'active') {
+      throw Object.assign(new Error('Your institute account is suspended. Please contact support.'), {
+        statusCode: 403,
+        code: 'INSTITUTE_SUSPENDED',
+      });
+    }
+
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    logger.info(`Student logged in: ${user.email}`);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        role: user.role,
+        instituteId: user.instituteId,
+        instituteName: user.institute?.name || null,
+        permissions: [],
       },
     };
   },

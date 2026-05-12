@@ -52,14 +52,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const email = formData.email.trim();
+    const password = formData.password;
+    
+    if (!email || !password) return;
+
     setIsLoading(true);
     setError(null);
     try {
-      await login(formData.email, formData.password);
+      await login(email, password);
       onClose();
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.error || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -67,10 +72,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    const email = formData.email.trim();
+    if (!email) return;
+
     setIsLoading(true);
     setError(null);
     try {
-      await registerSendOtp(formData.email);
+      await registerSendOtp(email);
       setMode('otp');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to send verification code');
@@ -193,7 +201,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isLoading || !formData.email.includes('@') || formData.password.length < 8}
+                  disabled={isLoading || !formData.email.trim().includes('@')}
                   className="mint-btn-primary w-full group"
                 >
                   {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (

@@ -42,6 +42,34 @@ export const authController = {
   },
 
   /**
+   * POST /api/v1/auth/staff/login
+   * Login for Staff/Teacher/Accountant with email + password
+   */
+  async staffLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      const result = await authService.loginStaff(email, password);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * POST /api/v1/auth/student/login
+   * Login for Student with email + password
+   */
+  async studentLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      const result = await authService.loginStudent(email, password);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * POST /api/v1/auth/super-admin/login
    * Login for Super Admin with email + password
    */

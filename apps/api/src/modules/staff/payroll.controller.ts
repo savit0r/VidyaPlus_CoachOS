@@ -129,6 +129,7 @@ export const payrollController = {
       logger.error('Failed to get payroll history', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to fetch payroll history' });
     }
+  },
   // ---------- Get Salary Suggestion based on Attendance ----------
   async getSalarySuggestion(req: Request, res: Response) {
     try {
@@ -161,9 +162,9 @@ export const payrollController = {
         }
       });
 
-      const absentDays = attendance.filter(a => a.status === 'absent').length;
-      const halfDays = attendance.filter(a => a.status === 'half_day').length;
-      const leaveDays = attendance.filter(a => a.status === 'leave').length; // Leaves might be paid/unpaid, assuming unpaid for "simple" logic
+      const absentDays = attendance.filter((a: any) => a.status === 'absent').length;
+      const halfDays = attendance.filter((a: any) => a.status === 'half_day').length;
+      const leaveDays = attendance.filter((a: any) => a.status === 'leave').length; // Leaves might be paid/unpaid, assuming unpaid for "simple" logic
 
       const totalDeductionDays = absentDays + (halfDays * 0.5) + leaveDays;
       const baseSalary = Number(staff.baseSalary);
