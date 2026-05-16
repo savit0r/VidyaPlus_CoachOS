@@ -3,6 +3,7 @@ import prisma from '../../lib/prisma';
 import logger from '../../lib/logger';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { authService } from '../auth/auth.service';
 
 // ============================================
 // Validation Schemas
@@ -10,11 +11,11 @@ import bcrypt from 'bcryptjs';
 const createStaffSchema = z.object({
   name: z.string().min(2).max(255),
   phone: z.string().min(10).max(15),
-  email: z.string().email().optional().nullable(),
+  email: z.string().email('Invalid email address'),
+  otp: z.string().length(6, 'OTP must be 6 digits'),
   role: z.enum(['teacher', 'accountant', 'admin', 'custom']),
   baseSalary: z.number().nonnegative().optional().default(0),
   permissions: z.array(z.string()).optional(),
-  password: z.string().min(6).optional().default('Staff@123'),
 });
 
 const updateStaffSchema = z.object({
@@ -27,28 +28,7 @@ const updateStaffSchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-// ============================================
-// Default Permissions
-// ============================================
-const DEFAULT_PERMISSIONS: Record<string, string[]> = {
-  teacher: [
-    'attendance.mark',
-    'attendance.view',
-    'batches.view',
-  ],
-  accountant: [
-    'fees.view',
-    'fees.collect',
-    'fees.edit',
-  ],
-  admin: [
-    'students.view', 'students.add', 'students.edit', 'students.delete',
-    'batches.view', 'batches.edit', 'batches.delete',
-    'attendance.mark', 'attendance.view', 'attendance.edit',
-    'fees.view', 'fees.collect', 'fees.edit', 'fees.delete',
-    'settings.manage'
-  ]
-};
+import { DEFAULT_ROLE_PERMISSIONS, Permission } from '@coachos/shared';
 
 // ============================================
 // Controllers
@@ -63,7 +43,6 @@ export const staffController = {
       const where: any = {
         instituteId,
         role: { notIn: ['owner', 'student'] },
-        deletedAt: null,
       };
 
       if (search && typeof search === 'string') {
@@ -98,34 +77,98 @@ export const staffController = {
     }
   },
 
+  // ---------- Get Staff By ID ----------
+  async getStaffById(req: Request, res: Response) {
+    try {
+      const instituteId = req.user!.instituteId!;
+      const { id } = req.params;
+
+      if (!id) {
+        res.status(400).json({ success: false, error: 'Staff ID is required' });
+        return;
+      }
+
+      const staff = await prisma.user.findFirst({
+        where: { 
+          id, 
+          instituteId,
+          role: { notIn: ['owner', 'student'] }
+        },
+        include: {
+          teacherBatches: {
+            where: { status: 'active' },
+            select: {
+              id: true,
+              name: true,
+              startTime: true,
+              endTime: true,
+              daysJson: true,
+            }
+          }
+        }
+      });
+
+      if (!staff) {
+        logger.warn(`Staff not found or access denied: ${id} for institute ${instituteId}`);
+        res.status(404).json({ success: false, error: 'Staff member not found or access denied' });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: {
+          id: staff.id,
+          name: staff.name,
+          phone: staff.phone,
+          email: staff.email,
+          role: staff.role,
+          baseSalary: Number(staff.baseSalary),
+          permissions: staff.permissionsJson,
+          status: staff.status,
+          createdAt: staff.createdAt,
+          assignedBatches: staff.teacherBatches,
+        },
+      });
+    } catch (error: any) {
+      logger.error('Failed to get staff by id', { 
+        error: error.message, 
+        stack: error.stack,
+        id: req.params.id 
+      });
+      res.status(500).json({ 
+        success: false, 
+        error: 'Backend Error: ' + error.message 
+      });
+    }
+  },
+
   // ---------- Create Staff ----------
   async createStaff(req: Request, res: Response) {
     try {
       const instituteId = req.user!.instituteId!;
       const body = createStaffSchema.parse(req.body);
 
-      // Check if phone or email already exists for this institute + role
+      // Check if email already exists for this institute + role
       const existing = await prisma.user.findFirst({
         where: {
           instituteId,
-          phone: body.phone,
+          email: body.email,
           role: body.role,
-          deletedAt: null,
         }
       });
 
       if (existing) {
-        res.status(409).json({ success: false, error: 'A staff member with this phone number and role already exists.' });
+        res.status(409).json({ success: false, error: 'A staff member with this email and role already exists.' });
         return;
       }
 
-      // Hash password
-      const passwordHash = await bcrypt.hash(body.password, 10);
+      // Verify OTP
+      await authService.verifyEmailOtp(body.email, body.otp);
 
       // Build permissions based on role
       let permissions = body.permissions || [];
       if (body.role !== 'custom') {
-        permissions = DEFAULT_PERMISSIONS[body.role] || [];
+        permissions = DEFAULT_ROLE_PERMISSIONS[body.role] || [];
       }
 
       const staff = await prisma.user.create({
@@ -134,11 +177,11 @@ export const staffController = {
           name: body.name,
           phone: body.phone,
           email: body.email,
-          passwordHash,
           role: body.role,
           baseSalary: body.baseSalary,
           permissionsJson: permissions,
           status: 'active',
+          emailVerified: true,
         }
       });
 
@@ -184,7 +227,7 @@ export const staffController = {
       const body = updateStaffSchema.parse(req.body);
 
       const existing = await prisma.user.findFirst({
-        where: { id, instituteId, role: { notIn: ['owner', 'student'] }, deletedAt: null }
+        where: { id, instituteId, role: { notIn: ['owner', 'student'] } }
       });
 
       if (!existing) {
@@ -196,7 +239,7 @@ export const staffController = {
       let permissions = existing.permissionsJson as string[];
       if (body.role && body.role !== existing.role) {
         if (body.role !== 'custom') {
-          permissions = DEFAULT_PERMISSIONS[body.role] || [];
+          permissions = DEFAULT_ROLE_PERMISSIONS[body.role] || [];
         } else {
           permissions = body.permissions || permissions;
         }
@@ -258,7 +301,7 @@ export const staffController = {
       const { id } = req.params;
 
       const existing = await prisma.user.findFirst({
-        where: { id, instituteId, role: { notIn: ['owner', 'student'] }, deletedAt: null }
+        where: { id, instituteId, role: { notIn: ['owner', 'student'] } }
       });
 
       if (!existing) {
@@ -266,9 +309,8 @@ export const staffController = {
         return;
       }
 
-      await prisma.user.update({
+      await prisma.user.delete({
         where: { id },
-        data: { deletedAt: new Date() }
       });
 
       await prisma.auditLog.create({

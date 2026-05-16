@@ -13,13 +13,20 @@ const superAdminLoginSchema = z.object({
   password: z.string().min(8),
 });
 
-const otpSendSchema = z.object({
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian phone number'),
+const loginOtpSendSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  portal: z.enum(['student', 'staff']),
 });
 
-const otpVerifySchema = z.object({
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian phone number'),
+const loginOtpVerifySchema = z.object({
+  email: z.string().email('Invalid email address'),
   otp: z.string().length(6, 'OTP must be 6 digits'),
+  portal: z.enum(['student', 'staff']),
+});
+
+const selectProfileSchema = z.object({
+  sessionToken: z.string().min(1),
+  userId: z.string().uuid('Invalid user ID'),
 });
 
 const refreshSchema = z.object({
@@ -29,40 +36,12 @@ const refreshSchema = z.object({
 export const authController = {
   /**
    * POST /api/v1/auth/login
-   * Login with phone + password (Owner, Staff, Teacher, Accountant)
+   * Login with email + password (Owner only)
    */
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = loginSchema.parse(req.body);
       const result = await authService.loginWithPassword(email, password);
-      res.json({ success: true, data: result });
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  /**
-   * POST /api/v1/auth/staff/login
-   * Login for Staff/Teacher/Accountant with email + password
-   */
-  async staffLogin(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { email, password } = loginSchema.parse(req.body);
-      const result = await authService.loginStaff(email, password);
-      res.json({ success: true, data: result });
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  /**
-   * POST /api/v1/auth/student/login
-   * Login for Student with email + password
-   */
-  async studentLogin(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { email, password } = loginSchema.parse(req.body);
-      const result = await authService.loginStudent(email, password);
       res.json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -84,13 +63,13 @@ export const authController = {
   },
 
   /**
-   * POST /api/v1/auth/otp/send
-   * Send OTP to student/parent phone
+   * POST /api/v1/auth/otp/send-login
+   * Send login OTP to student/staff email
    */
-  async sendOtp(req: Request, res: Response, next: NextFunction) {
+  async sendLoginOtp(req: Request, res: Response, next: NextFunction) {
     try {
-      const { phone } = otpSendSchema.parse(req.body);
-      const result = await authService.sendOtp(phone);
+      const { email, portal } = loginOtpSendSchema.parse(req.body);
+      const result = await authService.sendLoginOtp(email, portal);
       res.json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -98,13 +77,42 @@ export const authController = {
   },
 
   /**
-   * POST /api/v1/auth/otp/verify
-   * Verify OTP and return tokens
+   * POST /api/v1/auth/otp/send-verification
+   * Send email verification OTP (for owner adding student/staff)
    */
-  async verifyOtp(req: Request, res: Response, next: NextFunction) {
+  async sendVerificationOtp(req: Request, res: Response, next: NextFunction) {
     try {
-      const { phone, otp } = otpVerifySchema.parse(req.body);
-      const result = await authService.verifyOtp(phone, otp);
+      const emailSchema = z.object({ email: z.string().email() });
+      const { email } = emailSchema.parse(req.body);
+      const result = await authService.sendVerificationOtp(email);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * POST /api/v1/auth/otp/verify-login
+   * Verify login OTP
+   */
+  async verifyLoginOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, otp, portal } = loginOtpVerifySchema.parse(req.body);
+      const result = await authService.verifyLoginOtp(email, otp, portal);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * POST /api/v1/auth/otp/select-profile
+   * Select a profile after OTP verification if multiple accounts exist
+   */
+  async selectProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sessionToken, userId } = selectProfileSchema.parse(req.body);
+      const result = await authService.selectProfile(sessionToken, userId);
       res.json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -165,7 +173,20 @@ export const authController = {
         return;
       }
 
-      res.json({ success: true, data: { user } });
+      const permissions = (user.permissionsJson as any[])?.length > 0
+        ? (user.permissionsJson as any[])
+        : (DEFAULT_ROLE_PERMISSIONS[user.role] || []);
+
+      res.json({ 
+        success: true, 
+        data: { 
+          user: {
+            ...user,
+            permissions,
+            permissionsJson: undefined // Hide internal field
+          } 
+        } 
+      });
     } catch (error) {
       next(error);
     }

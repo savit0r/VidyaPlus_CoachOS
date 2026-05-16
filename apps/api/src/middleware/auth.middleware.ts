@@ -70,8 +70,8 @@ export function requirePermission(...requiredPermissions: string[]) {
       return;
     }
 
-    // Owner, Super Admin, and Teacher bypass permission checks
-    if (req.user.role === 'owner' || req.user.role === 'super_admin' || req.user.role === 'teacher') {
+    // Owner and Super Admin bypass permission checks
+    if (req.user.role === 'owner' || req.user.role === 'super_admin') {
       next();
       return;
     }
@@ -115,4 +115,35 @@ export function enforceTenantIsolation(req: Request, res: Response, next: NextFu
   }
 
   next();
+}
+
+/**
+ * Middleware to check if user has at least one of the required permissions.
+ */
+export function requireAnyPermission(...requiredPermissions: string[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Authentication required', code: 'AUTH_REQUIRED' });
+      return;
+    }
+
+    if (req.user.role === 'owner' || req.user.role === 'super_admin') {
+      next();
+      return;
+    }
+
+    const userPermissions = req.user.permissions || [];
+    const hasAny = requiredPermissions.some(p => userPermissions.includes(p as any));
+
+    if (!hasAny) {
+      res.status(403).json({
+        success: false,
+        error: 'You do not have permission to perform this action',
+        code: 'PERMISSION_DENIED',
+      });
+      return;
+    }
+
+    next();
+  };
 }

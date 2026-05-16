@@ -35,7 +35,7 @@ async function verify() {
 
   // 3. Test Batch Limit Logic (Simulation)
   const batchCount = await prisma.batch.count({
-    where: { instituteId: demo?.id, deletedAt: null }
+    where: { instituteId: demo?.id }
   });
   console.log(`ℹ️ Current batch count for demo: ${batchCount}`);
   

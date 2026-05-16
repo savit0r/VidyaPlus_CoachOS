@@ -9,6 +9,7 @@ export const USER_ROLES = {
   TEACHER: 'teacher',
   ACCOUNTANT: 'accountant',
   STAFF: 'staff',
+  ADMIN: 'admin',
   STUDENT: 'student',
   PARENT: 'parent',
 } as const;
@@ -97,6 +98,8 @@ export const PERMISSIONS = {
   STUDENTS_ADD: 'students.add',
   STUDENTS_EDIT: 'students.edit',
   STUDENTS_DELETE: 'students.delete',
+  BATCHES_VIEW: 'batches.view',
+  BATCHES_EDIT: 'batches.edit',
   FEES_VIEW: 'fees.view',
   FEES_COLLECT: 'fees.collect',
   FEES_EDIT: 'fees.edit',
@@ -120,15 +123,20 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
   owner: Object.values(PERMISSIONS),
   teacher: [
     PERMISSIONS.STUDENTS_VIEW,
+    PERMISSIONS.BATCHES_VIEW,
     PERMISSIONS.ATTENDANCE_VIEW,
     PERMISSIONS.ATTENDANCE_MARK,
   ],
   accountant: [
     PERMISSIONS.STUDENTS_VIEW,
+    PERMISSIONS.BATCHES_VIEW,
     PERMISSIONS.FEES_VIEW,
     PERMISSIONS.FEES_COLLECT,
+    PERMISSIONS.FEES_EDIT,
+    PERMISSIONS.FEES_DELETE,
     PERMISSIONS.REPORTS_VIEW,
     PERMISSIONS.NOTIFICATIONS_VIEW,
+    PERMISSIONS.STAFF_VIEW,
   ],
   staff: [
     PERMISSIONS.STUDENTS_VIEW,
@@ -139,6 +147,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
     PERMISSIONS.NOTIFICATIONS_SEND,
     PERMISSIONS.REPORTS_VIEW,
   ],
+  admin: Object.values(PERMISSIONS),
+  custom: [],
 };
 
 // API Response Types

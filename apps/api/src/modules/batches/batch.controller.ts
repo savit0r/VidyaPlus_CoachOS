@@ -20,6 +20,7 @@ const createBatchSchema = z.object({
   endDate: z.string().optional(),
   feeAmount: z.number().min(0).optional(),
   feeType: z.enum(['monthly', 'one-time']).optional(),
+  admissionFee: z.number().min(0).optional(),
 });
 
 const updateBatchSchema = z.object({
@@ -36,6 +37,7 @@ const updateBatchSchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
   feeAmount: z.number().min(0).optional(),
   feeType: z.enum(['monthly', 'one-time']).optional(),
+  admissionFee: z.number().min(0).optional(),
 });
 
 const enrollSchema = z.object({
@@ -53,7 +55,7 @@ function timeOverlaps(s1: string, e1: string, s2: string, e2: string): boolean {
 async function detectConflicts(instituteId: string, daysJson: string[], startTime: string, endTime: string, room?: string, teacherId?: string, excludeBatchId?: string) {
   const conflicts: string[] = [];
   const existingBatches = await prisma.batch.findMany({
-    where: { instituteId, status: 'active', deletedAt: null, id: excludeBatchId ? { not: excludeBatchId } : undefined },
+    where: { instituteId, status: 'active', id: excludeBatchId ? { not: excludeBatchId } : undefined },
     include: { teacher: { select: { name: true } } },
   });
 
@@ -85,8 +87,9 @@ export const batchController = {
       const search = req.query.search as string | undefined;
       const status = req.query.status as string | undefined;
 
-      const where: any = { instituteId, deletedAt: null };
+      const where: any = { instituteId };
       if (status) where.status = status;
+      if (req.user!.role === 'teacher') where.teacherId = req.user!.userId;
       if (search) {
         where.OR = [
           { name: { contains: search, mode: 'insensitive' } },
@@ -98,6 +101,7 @@ export const batchController = {
         where,
         include: {
           teacher: { select: { id: true, name: true } },
+          feePlan: { select: { id: true, name: true, amount: true, frequency: true } },
           _count: { select: { enrollments: { where: { status: 'active' } } } },
         },
         orderBy: { createdAt: 'desc' },
@@ -123,7 +127,11 @@ export const batchController = {
       const { id } = req.params;
 
       const batch = await prisma.batch.findFirst({
-        where: { id, instituteId, deletedAt: null },
+        where: { 
+          id, 
+          instituteId,
+          ...(req.user!.role === 'teacher' ? { teacherId: req.user!.userId } : {})
+        },
         include: {
           teacher: { select: { id: true, name: true, phone: true } },
           feePlan: { select: { id: true, name: true, amount: true, frequency: true } },
@@ -202,7 +210,7 @@ export const batchController = {
         where: { id: instituteId },
         include: {
           plan: true,
-          _count: { select: { batches: { where: { deletedAt: null } } } },
+          _count: { select: { batches: true } },
         },
       });
 
@@ -257,6 +265,7 @@ export const batchController = {
           endTime: body.endTime,
           capacity: body.capacity,
           feePlanId,
+          admissionFee: body.admissionFee || 0,
           startDate: body.startDate ? new Date(body.startDate) : null,
           endDate: body.endDate ? new Date(body.endDate) : null,
         },
@@ -296,7 +305,7 @@ export const batchController = {
       const { id } = req.params;
       const body = updateBatchSchema.parse(req.body);
 
-      const existing = await prisma.batch.findFirst({ where: { id, instituteId, deletedAt: null } });
+      const existing = await prisma.batch.findFirst({ where: { id, instituteId } });
       if (!existing) {
         res.status(404).json({ success: false, error: 'Batch not found', code: 'NOT_FOUND' });
         return;
@@ -353,6 +362,7 @@ export const batchController = {
         data: {
           ...batchData,
           feePlanId,
+          admissionFee: body.admissionFee !== undefined ? body.admissionFee : existing.admissionFee,
           startDate: body.startDate ? new Date(body.startDate) : body.startDate === null ? null : undefined,
           endDate: body.endDate ? new Date(body.endDate) : body.endDate === null ? null : undefined,
         },
@@ -381,27 +391,49 @@ export const batchController = {
     }
   },
 
-  // ---------- Delete Batch (Soft) ----------
+  // ---------- Delete Batch (Hard) ----------
   async delete(req: Request, res: Response) {
     try {
       const instituteId = req.user!.instituteId!;
       const { id } = req.params;
 
-      const existing = await prisma.batch.findFirst({ where: { id, instituteId, deletedAt: null } });
+      const existing = await prisma.batch.findFirst({ where: { id, instituteId } });
       if (!existing) {
         res.status(404).json({ success: false, error: 'Batch not found', code: 'NOT_FOUND' });
         return;
       }
 
-      await prisma.$transaction([
-        prisma.batch.update({ where: { id }, data: { status: 'inactive', deletedAt: new Date() } }),
-        prisma.batchEnrollment.updateMany({ where: { batchId: id }, data: { status: 'inactive' } }),
-        prisma.auditLog.create({
-          data: { instituteId, userId: req.user!.userId, action: 'batch.delete', entityType: 'batch', entityId: id, beforeJson: { name: existing.name }, ipAddress: req.ip },
-        }),
-      ]);
+      await prisma.$transaction(async (tx) => {
+        // 1. Audit log (Before deletion)
+        await tx.auditLog.create({
+          data: { 
+            instituteId, 
+            userId: req.user!.userId, 
+            action: 'batch.delete', 
+            entityType: 'batch', 
+            entityId: id, 
+            beforeJson: { name: existing.name }, 
+            ipAddress: req.ip 
+          },
+        });
 
-      res.json({ success: true, message: 'Batch deleted' });
+        // 2. Hard delete the batch (Cascades to enrollments, attendance, etc.)
+        await tx.batch.delete({ where: { id } });
+
+        // 3. Clean up fee plan if it was exclusively for this batch
+        if (existing.feePlanId) {
+          const otherBatchesUsingPlan = await tx.batch.count({
+            where: { feePlanId: existing.feePlanId }
+          });
+
+          if (otherBatchesUsingPlan === 0) {
+            await tx.feePlan.delete({ where: { id: existing.feePlanId } });
+            logger.info(`Hard-deleted orphaned fee plan: ${existing.feePlanId}`);
+          }
+        }
+      });
+
+      res.json({ success: true, message: 'Batch deleted permanently' });
     } catch (error: any) {
       logger.error('Failed to delete batch', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to delete batch' });
@@ -417,7 +449,7 @@ export const batchController = {
 
       // Verify batch
       const batch = await prisma.batch.findFirst({
-        where: { id: batchId, instituteId, deletedAt: null },
+        where: { id: batchId, instituteId },
         include: { _count: { select: { enrollments: { where: { status: 'active' } } } } },
       });
       if (!batch) {
@@ -511,12 +543,11 @@ export const batchController = {
         return;
       }
 
-      await prisma.batchEnrollment.update({
+      await prisma.batchEnrollment.delete({
         where: { id: enrollment.id },
-        data: { status: 'inactive' },
       });
 
-      res.json({ success: true, message: 'Student removed from batch' });
+      res.json({ success: true, message: 'Student removed from batch permanently' });
     } catch (error: any) {
       logger.error('Failed to unenroll student', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to unenroll student' });

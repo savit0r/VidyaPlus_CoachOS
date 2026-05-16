@@ -48,20 +48,12 @@ export const publicController = {
       // Generate 6‑digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const hashedOtp = await bcrypt.hash(otp, 10);
-      // Store OTP (upsert for idempotency)
-      await prisma.otpStore.upsert({
-        where: { email: email },
-        update: {
-          hashedOtp,
-          attempts: 0,
-          verified: false,
-          expiresAt: new Date(Date.now() + Number(process.env.OTP_EXPIRY_MINUTES || '10') * 60 * 1000),
-        },
-        create: {
+      // Store OTP
+      await prisma.otpStore.create({
+        data: {
           email,
           hashedOtp,
-          attempts: 0,
-          verified: false,
+          purpose: 'email_verify',
           expiresAt: new Date(Date.now() + Number(process.env.OTP_EXPIRY_MINUTES || '10') * 60 * 1000),
         },
       });
@@ -83,7 +75,7 @@ export const publicController = {
       }
       // Retrieve OTP record
       const otpRecord = await prisma.otpStore.findFirst({
-        where: { email, verified: false, expiresAt: { gte: new Date() } },
+        where: { email, purpose: 'email_verify', verified: false, expiresAt: { gte: new Date() } },
         orderBy: { createdAt: 'desc' },
       });
       if (!otpRecord) {

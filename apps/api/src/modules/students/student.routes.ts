@@ -12,5 +12,6 @@ router.get('/:id', requirePermission('students.view'), studentController.get);
 router.post('/', requirePermission('students.add'), studentController.create);
 router.patch('/:id', requirePermission('students.edit'), studentController.update);
 router.delete('/:id', requirePermission('students.delete'), studentController.delete);
+router.post('/:id/send-email', requirePermission('students.edit'), studentController.sendEmail);
 
 export default router;

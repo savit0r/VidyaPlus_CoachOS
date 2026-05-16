@@ -46,12 +46,16 @@ export const attendanceController = {
       today.setHours(0, 0, 0, 0);
       const isLateSubmission = attendanceDate < today;
 
-      // Verify batch belongs to institute
+      // Verify batch belongs to institute and teacher (if teacher role)
       const batch = await prisma.batch.findFirst({
-        where: { id: body.batchId, instituteId, deletedAt: null },
+        where: { 
+          id: body.batchId, 
+          instituteId,
+          ...(req.user!.role === 'teacher' ? { teacherId: req.user!.userId } : {})
+        },
       });
       if (!batch) {
-        res.status(404).json({ success: false, error: 'Batch not found', code: 'NOT_FOUND' });
+        res.status(404).json({ success: false, error: 'Batch not found or not assigned to you', code: 'NOT_FOUND' });
         return;
       }
 
@@ -115,12 +119,35 @@ export const attendanceController = {
           })
         )
       );
+      
+      // Auto-Mark Teacher Attendance
+      if (req.user!.role !== 'owner') {
+         const today = new Date();
+         today.setHours(0, 0, 0, 0);
+         
+         await prisma.staffAttendance.upsert({
+            where: {
+               staffId_date: {
+                  staffId: req.user!.userId,
+                  date: today,
+               }
+            },
+            update: { status: 'present', markedById: req.user!.userId },
+            create: {
+               instituteId,
+               staffId: req.user!.userId,
+               date: today,
+               status: 'present',
+               markedById: req.user!.userId,
+            }
+         });
+      }
 
       // Create in-app absence notifications
       const absentRecords = body.records.filter(r => r.status === 'absent');
       if (absentRecords.length > 0) {
         const owners = await prisma.user.findMany({
-          where: { instituteId, role: 'owner', status: 'active', deletedAt: null }
+          where: { instituteId, role: 'owner', status: 'active' }
         });
         if (owners.length > 0) {
           for (const rec of absentRecords) {
@@ -201,6 +228,19 @@ export const attendanceController = {
       }
 
       const attendanceDate = new Date(date);
+      
+      // Verify batch permissions
+      const batch = await prisma.batch.findFirst({
+        where: { 
+          id: batchId, 
+          instituteId,
+          ...(req.user!.role === 'teacher' ? { teacherId: req.user!.userId } : {})
+        },
+      });
+      if (!batch) {
+        res.status(404).json({ success: false, error: 'Batch not found or access denied', code: 'NOT_FOUND' });
+        return;
+      }
 
       const records = await prisma.attendanceRecord.findMany({
         where: { batchId, date: attendanceDate, instituteId },

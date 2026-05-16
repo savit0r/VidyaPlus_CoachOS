@@ -69,7 +69,13 @@ export default function LoginPage() {
                 <label htmlFor="password" className="text-[11px] font-semibold text-steel uppercase tracking-[0.5px]">
                   Password
                 </label>
-                <a href="#" className="text-xs font-medium text-ink hover:underline transition-all">Forgot?</a>
+                <button 
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  className="text-xs font-medium text-ink hover:underline transition-all"
+                >
+                  Forgot?
+                </button>
               </div>
               <div className="relative">
                 <input

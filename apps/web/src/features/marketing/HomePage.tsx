@@ -13,8 +13,8 @@ const LOGOS = ['Aakash Prep', 'BrightPath', 'Narayana Local', 'Focus Academy', '
 const FEATURES = [
   {
     icon: Users,
-    title: 'Student registry',
-    body: 'Manage profiles, parent contacts, enrollment status, and batch history in one dense workspace.',
+    title: 'Student directory',
+    body: 'Manage profiles, parent contacts, enrollment status, and class history in one simple workspace.',
   },
   {
     icon: IndianRupee,
@@ -23,7 +23,7 @@ const FEATURES = [
   },
   {
     icon: CalendarCheck,
-    title: 'Attendance matrix',
+    title: 'Daily attendance',
     body: 'Mark daily attendance, review calendar heatmaps, and spot batch-level gaps before they spread.',
   },
   {
@@ -34,13 +34,13 @@ const FEATURES = [
 ];
 
 const MODULES = [
-  'Dashboard KPIs',
-  'Students',
-  'Batches',
-  'Fee plans',
+  'Dashboard Overview',
+  'Student Directory',
+  'Classes & Batches',
+  'Fee Structures',
   'Receipts',
   'Attendance',
-  'Staff payroll',
+  'Staff Management',
   'Reports',
 ];
 

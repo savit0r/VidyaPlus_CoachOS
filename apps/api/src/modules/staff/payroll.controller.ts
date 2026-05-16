@@ -27,7 +27,7 @@ export const payrollController = {
 
       // Verify the staff user exists in this institute
       const staff = await prisma.user.findFirst({
-        where: { id: body.staffId, instituteId, role: { notIn: ['owner', 'student'] }, deletedAt: null }
+        where: { id: body.staffId, instituteId, role: { notIn: ['owner', 'student'] } }
       });
 
       if (!staff) {
@@ -142,7 +142,7 @@ export const payrollController = {
       }
 
       const staff = await prisma.user.findFirst({
-        where: { id: staffId as string, instituteId, deletedAt: null },
+        where: { id: staffId as string, instituteId },
         select: { baseSalary: true, name: true }
       });
 

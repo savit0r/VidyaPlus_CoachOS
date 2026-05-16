@@ -20,7 +20,7 @@ export const reportController = {
 
       // 2. Collection breakdown by batch
       const batches = await prisma.batch.findMany({
-        where: { instituteId, deletedAt: null },
+        where: { instituteId },
         include: {
           feeRecords: true,
         },
@@ -90,7 +90,7 @@ export const reportController = {
 
       // Group by batch
       const batches = await prisma.batch.findMany({
-        where: { instituteId, deletedAt: null },
+        where: { instituteId },
       });
 
       const batchSummary = batches.map(b => {

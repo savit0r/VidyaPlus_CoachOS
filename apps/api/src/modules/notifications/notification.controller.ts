@@ -117,7 +117,7 @@ export const notificationController = {
 
       // Find the institute owner(s) who should receive this alert
       const owners = await prisma.user.findMany({
-        where: { instituteId, role: 'owner', status: 'active', deletedAt: null }
+        where: { instituteId, role: 'owner', status: 'active' }
       });
 
       if (owners.length === 0) {

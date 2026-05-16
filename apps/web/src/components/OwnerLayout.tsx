@@ -12,22 +12,16 @@ import {
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Users, label: 'Students', path: '/students', permission: 'students.view' },
-  { icon: BookOpen, label: 'Batches', path: '/batches', permission: 'batches.view' },
-  { icon: CalendarCheck, label: 'Attendance', path: '/attendance', permission: 'attendance.view' },
-  { icon: IndianRupee, label: 'Fees', path: '/fees', permission: 'fees.view' },
   { icon: Bell, label: 'Notifications', path: '/notifications' },
   { icon: TrendingUp, label: 'Reports', path: '/reports', permission: 'fees.view' },
   { icon: Wallet, label: 'Wallet', path: '/wallet', permission: 'fees.view' },
-
-  { icon: UserCog, label: 'Staff', path: '/staff', permission: 'settings.manage' },
   { icon: Settings, label: 'Settings', path: '/settings', permission: 'settings.manage' },
 ];
 
 const BOTTOM_NAV_ITEMS = [
   { icon: LayoutDashboard, label: 'Home', path: '/dashboard' },
-  { icon: Users, label: 'Students', path: '/students' },
-  { icon: BookOpen, label: 'Batches', path: '/batches' },
+  { icon: Bell, label: 'Alerts', path: '/notifications' },
+  { icon: Wallet, label: 'Wallet', path: '/wallet' },
   { icon: MoreHorizontal, label: 'More', path: 'more' }, // 'more' will trigger sidebar/menu
 ];
 

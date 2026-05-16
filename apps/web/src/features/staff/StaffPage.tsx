@@ -98,10 +98,10 @@ export default function StaffPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 border border-brand-green/20 text-brand-green-deep text-[10px] font-bold uppercase tracking-widest">
-            <Users className="w-3 h-3" /> Team Center
+            <Users className="w-3 h-3" /> Team Management
           </div>
-          <h1 className="text-4xl font-black text-ink tracking-tight">My Team</h1>
-          <p className="text-slate text-sm font-medium">Manage your educators, administrators, and daily operations.</p>
+          <h1 className="text-4xl font-black text-ink tracking-tight">Team Members</h1>
+          <p className="text-slate text-sm font-medium">Manage your teachers and staff members.</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -115,9 +115,9 @@ export default function StaffPage() {
       {/* Atmospheric Tabs */}
       <div className="flex items-center gap-1 p-1 bg-surface/50 backdrop-blur-md rounded-2xl border border-hairline w-fit mb-8">
         {[
-          { id: 'members', label: 'Registry', icon: Users },
-          { id: 'attendance', label: 'Daily Attendance', icon: Calendar },
-          { id: 'roles', label: 'Delegation Matrix', icon: Shield }
+          { id: 'members', label: 'Members', icon: Users },
+          { id: 'attendance', label: 'Check Attendance', icon: Calendar },
+          { id: 'roles', label: 'Permissions', icon: Shield }
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -132,7 +132,7 @@ export default function StaffPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center h-64">
            <Loader2 className="w-8 h-8 text-brand-green animate-spin" />
-           <p className="text-[10px] font-bold text-slate uppercase tracking-widest mt-4">Syncing Team Data...</p>
+            <p className="text-[10px] font-bold text-slate uppercase tracking-widest mt-4">Loading Team Members...</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -193,8 +193,8 @@ export default function StaffPage() {
                         <Calendar className="w-6 h-6 text-brand-green" />
                      </div>
                      <div>
-                        <h2 className="text-lg font-bold text-ink tracking-tight">Daily Roll Call</h2>
-                        <p className="text-xs text-slate font-medium">Record and approve daily presence</p>
+                        <h2 className="text-lg font-bold text-ink tracking-tight">Daily Attendance</h2>
+                        <p className="text-xs text-slate font-medium">Record who was present today</p>
                      </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -279,8 +279,8 @@ export default function StaffPage() {
                <div className="lg:col-span-1 space-y-6">
                   <div className="mint-card bg-brand-green-deep text-white p-8">
                      <Shield className="w-10 h-10 mb-4 opacity-50" />
-                     <h3 className="text-xl font-bold mb-2">The Delegation Matrix</h3>
-                     <p className="text-white/70 text-sm leading-relaxed mb-6">Assign powers to your team members. Roles have standard abilities, but you can customize them for total control.</p>
+                      <h3 className="text-xl font-bold mb-2">Permissions & Roles</h3>
+                      <p className="text-white/70 text-sm leading-relaxed mb-6">Control what each team member can see or edit. Use standard roles or create custom settings.</p>
                      <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
                         <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-2">Quick Tip</p>
                         <p className="text-xs font-medium italic">"Delegation is the key to growing your institute without losing your sanity."</p>
@@ -290,10 +290,10 @@ export default function StaffPage() {
 
                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { title: 'Administrator', desc: 'Full access to everything. Usually for partners or senior managers.', power: 'Supreme' },
-                    { title: 'Teacher', desc: 'Focus on batches and attendance. Cannot see financials.', power: 'Academic' },
-                    { title: 'Accountant', desc: 'Focus on fees and salaries. No batch management.', power: 'Financial' },
-                    { title: 'Receptionist', desc: 'Can add students and mark basic attendance.', power: 'Front-desk' }
+                    { title: 'Administrator', desc: 'Full access to everything. Usually for partners or senior managers.', power: 'Full Access' },
+                    { title: 'Teacher', desc: 'Focus on batches and attendance. Cannot see financials.', power: 'Teaching Only' },
+                    { title: 'Accountant', desc: 'Focus on fees and salaries. No batch management.', power: 'Accounts Only' },
+                    { title: 'Receptionist', desc: 'Can add students and mark basic attendance.', power: 'Front Office' }
                   ].map(role => (
                     <div key={role.title} className="mint-card bg-canvas p-6 border border-hairline hover:border-brand-green transition-all">
                        <div className="flex justify-between items-start mb-4">

@@ -69,7 +69,6 @@ export const authService = {
       where: {
         email,
         status: 'active',
-        deletedAt: null,
         role: 'owner',
       },
       include: { institute: true },
@@ -141,120 +140,6 @@ export const authService = {
   },
 
   /**
-   * Login with email + password (for Staff/Teacher/Accountant portal)
-   */
-  async loginStaff(email: string, password: string) {
-    const user = await prisma.user.findFirst({
-      where: {
-        email,
-        status: 'active',
-        deletedAt: null,
-        role: { in: ['teacher', 'accountant', 'staff'] },
-      },
-      include: { institute: true },
-    });
-
-    if (!user || !user.passwordHash) {
-      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-    if (!isValidPassword) {
-      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
-    }
-
-    if (user.institute && user.institute.status !== 'active') {
-      throw Object.assign(new Error('Your institute account is suspended. Please contact support.'), {
-        statusCode: 403,
-        code: 'INSTITUTE_SUSPENDED',
-      });
-    }
-
-    const permissions = (user.permissionsJson as Permission[]).length > 0
-      ? (user.permissionsJson as Permission[])
-      : (DEFAULT_ROLE_PERMISSIONS[user.role] || []);
-
-    const { accessToken, refreshToken } = await this.generateTokens(user);
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
-
-    logger.info(`Staff logged in: ${user.email} (${user.role})`);
-
-    return {
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
-        role: user.role,
-        instituteId: user.instituteId,
-        instituteName: user.institute?.name || null,
-        permissions,
-      },
-    };
-  },
-
-  /**
-   * Login with email + password (for Student portal)
-   */
-  async loginStudent(email: string, password: string) {
-    const user = await prisma.user.findFirst({
-      where: {
-        email,
-        status: 'active',
-        deletedAt: null,
-        role: 'student',
-      },
-      include: { institute: true },
-    });
-
-    if (!user || !user.passwordHash) {
-      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-    if (!isValidPassword) {
-      throw Object.assign(new Error('Invalid email or password'), { statusCode: 401, code: 'INVALID_CREDENTIALS' });
-    }
-
-    if (user.institute && user.institute.status !== 'active') {
-      throw Object.assign(new Error('Your institute account is suspended. Please contact support.'), {
-        statusCode: 403,
-        code: 'INSTITUTE_SUSPENDED',
-      });
-    }
-
-    const { accessToken, refreshToken } = await this.generateTokens(user);
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
-
-    logger.info(`Student logged in: ${user.email}`);
-
-    return {
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
-        role: user.role,
-        instituteId: user.instituteId,
-        instituteName: user.institute?.name || null,
-        permissions: [],
-      },
-    };
-  },
-
-  /**
    * Login with email + password (for Super Admin)
    */
   async loginSuperAdmin(email: string, password: string) {
@@ -310,94 +195,89 @@ export const authService = {
   },
 
   /**
-   * Send OTP to phone (for Student/Parent login)
+   * Send login OTP via email (for Student & Staff)
    */
-  async sendOtp(phone: string) {
+  async sendLoginOtp(email: string, portal: 'student' | 'staff') {
     // Check for lockout
     const recentAttempts = await prisma.otpStore.count({
       where: {
-        phone,
+        email,
+        purpose: 'login',
         createdAt: { gte: new Date(Date.now() - 30 * 60 * 1000) },
-        attempts: { gte: 3 },
+        attempts: { gte: 5 },
       },
     });
 
     if (recentAttempts > 0) {
-      throw Object.assign(new Error('Too many OTP attempts. Try again after 30 minutes.'), {
+      throw Object.assign(new Error('Too many OTP attempts. Try again later.'), {
         statusCode: 429,
         code: 'OTP_LOCKOUT',
       });
     }
 
-    // Check user exists with this phone
-    const user = await prisma.user.findFirst({
-      where: {
-        phone,
-        role: { in: ['student', 'parent'] },
+    // Role filter based on portal
+    const roleFilter = portal === 'student' ? 'student' : { in: ['teacher', 'accountant', 'staff', 'admin', 'custom'] };
+
+    // Check if any user exists with this email for the portal
+    const users = await prisma.user.findMany({
+      where: { 
+        email, 
+        role: roleFilter, 
         status: 'active',
+        emailVerified: true // Only allow verified users to send OTP
       },
     });
 
-    if (!user) {
-      throw Object.assign(new Error('No account found with this phone number'), {
-        statusCode: 404,
-        code: 'USER_NOT_FOUND',
+    if (users.length === 0) {
+      throw Object.assign(new Error(`No verified ${portal} account found with this email. Please contact your administrator.`), {
+        statusCode: 403,
+        code: 'USER_UNVERIFIED',
       });
     }
 
     const otp = generateOtp();
     const expiryMinutes = parseInt(process.env.OTP_EXPIRY_MINUTES || '10');
-
     const hashedOtp = await bcrypt.hash(otp, 10);
 
-    // Store OTP
+    // Upsert OTP store
     await prisma.otpStore.create({
       data: {
-        phone,
+        email,
         hashedOtp,
+        purpose: 'login',
         expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
       },
     });
 
-    // In development, log OTP to console
-    logger.info(`[DEV] OTP for ${phone}: ${otp}`);
+    // We will need to update mailer.ts to include sendLoginOtpEmail
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { sendLoginOtpEmail } = require('../../lib/mailer');
+    await sendLoginOtpEmail(email, otp);
 
-    // TODO: In production, send via SMS (Twilio)
+    logger.info(`[AUTH] Login OTP sent to ${email} for ${portal} portal. [DEV OTP: ${otp}]`);
 
     return { message: 'OTP sent successfully', expiresInMinutes: expiryMinutes };
   },
 
   /**
-   * Verify OTP and return tokens
+   * Verify login OTP
    */
-  async verifyOtp(phone: string, otp: string) {
+  async verifyLoginOtp(email: string, otp: string, portal: 'student' | 'staff') {
     const otpRecord = await prisma.otpStore.findFirst({
-      where: {
-        phone,
-        verified: false,
-        expiresAt: { gte: new Date() },
-      },
+      where: { email, purpose: 'login', verified: false, expiresAt: { gte: new Date() } },
       orderBy: { createdAt: 'desc' },
     });
 
     if (!otpRecord) {
-      throw Object.assign(new Error('OTP expired or not found. Request a new one.'), {
-        statusCode: 400,
-        code: 'OTP_EXPIRED',
-      });
+      throw Object.assign(new Error('OTP expired or not found'), { statusCode: 400, code: 'OTP_EXPIRED' });
     }
 
-    if (otpRecord.attempts >= 3) {
-      throw Object.assign(new Error('Too many failed attempts. Request a new OTP.'), {
-        statusCode: 429,
-        code: 'OTP_MAX_ATTEMPTS',
-      });
+    if (otpRecord.attempts >= 5) {
+      throw Object.assign(new Error('Too many failed attempts'), { statusCode: 429, code: 'OTP_MAX_ATTEMPTS' });
     }
 
     const isMatch = await bcrypt.compare(otp, otpRecord.hashedOtp);
-
     if (!isMatch) {
-      // Increment attempts
       await prisma.otpStore.update({
         where: { id: otpRecord.id },
         data: { attempts: { increment: 1 } },
@@ -405,15 +285,84 @@ export const authService = {
       throw Object.assign(new Error('Invalid OTP'), { statusCode: 400, code: 'INVALID_OTP' });
     }
 
-    // Mark as verified
-    await prisma.otpStore.update({
-      where: { id: otpRecord.id },
-      data: { verified: true },
+    // OTP is valid
+    await prisma.otpStore.update({ where: { id: otpRecord.id }, data: { verified: true } });
+
+    // Fetch users for this portal
+    const roleFilter = portal === 'student' ? 'student' : { in: ['teacher', 'accountant', 'staff', 'admin', 'custom'] };
+    const users = await prisma.user.findMany({
+      where: { email, role: roleFilter, status: 'active' },
+      include: { institute: true },
     });
 
-    // Find user
+    if (users.length === 0) {
+      throw Object.assign(new Error('User not found'), { statusCode: 404, code: 'USER_NOT_FOUND' });
+    }
+
+    // Mark email as verified if it wasn't
+    // REMOVED: Students/Staff cannot verify themselves via login OTP. 
+    // They must be verified by the owner during creation or via admin panel.
+
+    if (users.length === 1) {
+      const user = users[0];
+      const { accessToken, refreshToken } = await this.generateTokens(user);
+      await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+      
+      const permissions = (user.permissionsJson as Permission[]).length > 0
+        ? (user.permissionsJson as Permission[])
+        : (DEFAULT_ROLE_PERMISSIONS[user.role] || []);
+
+      return {
+        type: 'authenticated',
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          phone: user.phone,
+          email: user.email,
+          role: user.role,
+          instituteId: user.instituteId,
+          instituteName: user.institute?.name || null,
+          permissions,
+        },
+      };
+    }
+
+    // Multiple profiles - generate a short-lived session token
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    await prisma.otpStore.update({
+      where: { id: otpRecord.id },
+      data: { sessionToken },
+    });
+
+    return {
+      type: 'select_profile',
+      sessionToken,
+      profiles: users.map(u => ({
+        id: u.id,
+        name: u.name,
+        role: u.role,
+        instituteName: u.institute?.name || 'Unknown Institute',
+        photoUrl: u.photoUrl,
+      })),
+    };
+  },
+
+  /**
+   * Select a profile after OTP verification
+   */
+  async selectProfile(sessionToken: string, userId: string) {
+    const otpRecord = await prisma.otpStore.findFirst({
+      where: { sessionToken, purpose: 'login', verified: true, expiresAt: { gte: new Date() } },
+    });
+
+    if (!otpRecord) {
+      throw Object.assign(new Error('Invalid or expired session'), { statusCode: 401, code: 'INVALID_SESSION' });
+    }
+
     const user = await prisma.user.findFirst({
-      where: { phone, role: { in: ['student', 'parent'] }, status: 'active' },
+      where: { id: userId, email: otpRecord.email, status: 'active' },
       include: { institute: true },
     });
 
@@ -421,29 +370,16 @@ export const authService = {
       throw Object.assign(new Error('User not found'), { statusCode: 404, code: 'USER_NOT_FOUND' });
     }
 
-    const jwtPayload: JwtPayload = {
-      userId: user.id,
-      instituteId: user.instituteId,
-      role: user.role as any,
-      permissions: [],
-    };
+    // Generate tokens
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
 
-    const accessToken = generateAccessToken(jwtPayload);
-    const refreshToken = generateRefreshToken();
+    // Invalidate session to prevent reuse
+    await prisma.otpStore.delete({ where: { id: otpRecord.id } });
 
-    const tokenHash = await bcrypt.hash(refreshToken, 10);
-    await prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        tokenHash,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    });
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
+    const permissions = (user.permissionsJson as Permission[]).length > 0
+      ? (user.permissionsJson as Permission[])
+      : (DEFAULT_ROLE_PERMISSIONS[user.role] || []);
 
     return {
       accessToken,
@@ -452,11 +388,64 @@ export const authService = {
         id: user.id,
         name: user.name,
         phone: user.phone,
+        email: user.email,
         role: user.role,
         instituteId: user.instituteId,
         instituteName: user.institute?.name || null,
+        permissions,
       },
     };
+  },
+
+  /**
+   * Send email verification OTP (used during student/staff creation)
+   */
+  async sendVerificationOtp(email: string) {
+    const otp = generateOtp();
+    const expiryMinutes = parseInt(process.env.OTP_EXPIRY_MINUTES || '10');
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    await prisma.otpStore.create({
+      data: {
+        email,
+        hashedOtp,
+        purpose: 'email_verify',
+        expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
+      },
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { sendOtpEmail } = require('../../lib/mailer');
+    await sendOtpEmail(email, otp);
+
+    logger.info(`[AUTH] Verification OTP sent to ${email}. [DEV OTP: ${otp}]`);
+    return { message: 'Verification OTP sent successfully', expiresInMinutes: expiryMinutes };
+  },
+
+  /**
+   * Verify email verification OTP
+   */
+  async verifyEmailOtp(email: string, otp: string) {
+    const otpRecord = await prisma.otpStore.findFirst({
+      where: { email, purpose: 'email_verify', verified: false, expiresAt: { gte: new Date() } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!otpRecord) {
+      throw Object.assign(new Error('OTP expired or not found'), { statusCode: 400, code: 'OTP_EXPIRED' });
+    }
+
+    const isMatch = await bcrypt.compare(otp, otpRecord.hashedOtp);
+    if (!isMatch) {
+      await prisma.otpStore.update({
+        where: { id: otpRecord.id },
+        data: { attempts: { increment: 1 } },
+      });
+      throw Object.assign(new Error('Invalid OTP'), { statusCode: 400, code: 'INVALID_OTP' });
+    }
+
+    await prisma.otpStore.update({ where: { id: otpRecord.id }, data: { verified: true } });
+    return { verified: true };
   },
 
   /**

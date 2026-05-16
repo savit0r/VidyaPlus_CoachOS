@@ -34,7 +34,7 @@ export const feePlanController = {
       const instituteId = req.user!.instituteId!;
 
       const feePlans = await prisma.feePlan.findMany({
-        where: { instituteId, deletedAt: null },
+        where: { instituteId },
         include: {
           _count: { select: { enrollments: { where: { status: 'active' } } } },
         },
@@ -102,7 +102,7 @@ export const feePlanController = {
       const { id } = req.params;
       const body = updateFeePlanSchema.parse(req.body);
 
-      const existing = await prisma.feePlan.findFirst({ where: { id, instituteId, deletedAt: null } });
+      const existing = await prisma.feePlan.findFirst({ where: { id, instituteId } });
       if (!existing) {
         res.status(404).json({ success: false, error: 'Fee plan not found', code: 'NOT_FOUND' });
         return;
@@ -139,7 +139,7 @@ export const feePlanController = {
       const instituteId = req.user!.instituteId!;
       const { id } = req.params;
 
-      const existing = await prisma.feePlan.findFirst({ where: { id, instituteId, deletedAt: null } });
+      const existing = await prisma.feePlan.findFirst({ where: { id, instituteId } });
       if (!existing) {
         res.status(404).json({ success: false, error: 'Fee plan not found', code: 'NOT_FOUND' });
         return;
@@ -152,15 +152,15 @@ export const feePlanController = {
       if (activeUsage > 0) {
         res.status(409).json({
           success: false,
-          error: `Cannot delete: ${activeUsage} active enrollments use this fee plan`,
+          error: `Cannot delete: ${activeUsage} active enrollments are currently using this fee plan.`,
           code: 'IN_USE',
         });
         return;
       }
 
-      await prisma.feePlan.update({ where: { id }, data: { status: 'inactive', deletedAt: new Date() } });
+      await prisma.feePlan.delete({ where: { id } });
 
-      res.json({ success: true, message: 'Fee plan deleted' });
+      res.json({ success: true, message: 'Fee plan deleted permanently' });
     } catch (error: any) {
       logger.error('Failed to delete fee plan', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to delete fee plan' });

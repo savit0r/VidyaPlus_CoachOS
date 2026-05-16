@@ -28,6 +28,9 @@ interface AuthState {
   registerVerify: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  verifyResetOtp: (email: string, otp: string) => Promise<void>;
+  resetPassword: (email: string, otp: string, newPassword: string) => Promise<void>;
   clearError: () => void;
   hasPermission: (permission: string) => boolean;
 }
@@ -142,6 +145,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       set({ user: null, isAuthenticated: false });
+    }
+  },
+
+  forgotPassword: async (email) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post('/auth/forgot-password', { email });
+      set({ isLoading: false });
+    } catch (err: any) {
+      set({ error: err.response?.data?.error || 'Failed to send OTP', isLoading: false });
+      throw err;
+    }
+  },
+
+  verifyResetOtp: async (email, otp) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post('/auth/verify-reset-otp', { email, otp });
+      set({ isLoading: false });
+    } catch (err: any) {
+      set({ error: err.response?.data?.error || 'Invalid OTP', isLoading: false });
+      throw err;
+    }
+  },
+
+  resetPassword: async (email, otp, newPassword) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post('/auth/reset-password', { email, otp, newPassword });
+      set({ isLoading: false });
+    } catch (err: any) {
+      set({ error: err.response?.data?.error || 'Failed to reset password', isLoading: false });
+      throw err;
     }
   },
 

@@ -52,8 +52,8 @@ export const superAdminController = {
       const [totalInstitutes, activeInstitutes, totalUsers, totalStudents, expiringPlans, revenueResult] = await Promise.all([
         prisma.institute.count(),
         prisma.institute.count({ where: { status: 'active' } }),
-        prisma.user.count({ where: { deletedAt: null } }),
-        prisma.user.count({ where: { role: 'student', deletedAt: null } }),
+        prisma.user.count(),
+        prisma.user.count({ where: { role: 'student' } }),
         prisma.institute.count({
           where: {
             status: 'active',
@@ -170,7 +170,7 @@ export const superAdminController = {
       // Get owner info for each institute
       const instituteIds = institutes.map(i => i.id);
       const owners = await prisma.user.findMany({
-        where: { instituteId: { in: instituteIds }, role: 'owner', deletedAt: null },
+        where: { instituteId: { in: instituteIds }, role: 'owner' },
         select: { id: true, name: true, phone: true, email: true, instituteId: true },
       });
       const ownerMap = new Map(owners.map(o => [o.instituteId!, o]));
@@ -217,13 +217,13 @@ export const superAdminController = {
       // Get user counts by role
       const roleCounts = await prisma.user.groupBy({
         by: ['role'],
-        where: { instituteId: id, deletedAt: null },
+        where: { instituteId: id },
         _count: true,
       });
 
       // Get owner and staff
       const users = await prisma.user.findMany({
-        where: { instituteId: id, deletedAt: null },
+        where: { instituteId: id },
         select: { id: true, name: true, phone: true, email: true, role: true, status: true, lastLoginAt: true, createdAt: true },
         orderBy: { createdAt: 'asc' },
       });
@@ -420,7 +420,7 @@ export const superAdminController = {
     }
   },
 
-  // ---------- Delete Institute (Soft) ----------
+  // ---------- Delete Institute (Hard) ----------
   async deleteInstitute(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -431,25 +431,25 @@ export const superAdminController = {
         return;
       }
 
-      // Soft delete: set status to inactive, deactivate all users
-      await prisma.$transaction([
-        prisma.institute.update({ where: { id }, data: { status: 'inactive' } }),
-        prisma.user.updateMany({ where: { instituteId: id }, data: { status: 'inactive', deletedAt: new Date() } }),
-      ]);
+      await prisma.$transaction(async (tx) => {
+        // 1. Audit log (Before deletion)
+        await tx.auditLog.create({
+          data: {
+            userId: req.user!.userId,
+            action: 'institute.delete',
+            entityType: 'institute',
+            entityId: id,
+            beforeJson: { name: existing.name, status: existing.status },
+            ipAddress: req.ip,
+          },
+        });
 
-      await prisma.auditLog.create({
-        data: {
-          userId: req.user!.userId,
-          action: 'institute.delete',
-          entityType: 'institute',
-          entityId: id,
-          beforeJson: { name: existing.name, status: existing.status },
-          ipAddress: req.ip,
-        },
+        // 2. Hard delete the institute (Cascades to Users, Batches, StudentProfiles, etc.)
+        await tx.institute.delete({ where: { id } });
       });
 
-      logger.info(`Institute deleted: ${existing.name} (${id})`);
-      res.json({ success: true, message: 'Institute deleted successfully' });
+      logger.info(`Institute deleted permanently: ${existing.name} (${id})`);
+      res.json({ success: true, message: 'Institute and all associated data deleted permanently' });
     } catch (error: any) {
       logger.error('Failed to delete institute', { error: error.message });
       res.status(500).json({ success: false, error: 'Failed to delete institute' });

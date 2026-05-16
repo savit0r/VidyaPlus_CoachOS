@@ -87,10 +87,10 @@ model User {
   address         String?
   baseSalary      Decimal   @default(0.00) @map("base_salary") @db.Decimal(10,2)
   status          String    @default("active") @db.VarChar(20)
+  emailVerified   Boolean   @default(false) @map("email_verified")
   lastLoginAt     DateTime? @map("last_login_at")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
-  deletedAt       DateTime? @map("deleted_at")
 
   institute        Institute?        @relation(fields: [instituteId], references: [id])
   studentProfile   StudentProfile?   @relation("UserStudent")
@@ -127,10 +127,11 @@ model StudentProfile {
   enrolledAt   DateTime @default(now()) @map("enrolled_at") @db.Date
   createdAt    DateTime @default(now()) @map("created_at")
 
-  user       User       @relation("UserStudent", fields: [userId], references: [id])
-  parentUser User?      @relation("ParentUser", fields: [parentUserId], references: [id])
+  user       User       @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
+  parentUser User?      @relation("ParentUser", fields: [parentUserId], references: [id], onDelete: SetNull)
   institute  Institute  @relation(fields: [instituteId], references: [id])
   feeRecords FeeRecord[]
+  enrollments BatchEnrollment[] @relation("StudentEnrollments")
 
   @@index([instituteId])
   @@map("student_profiles")
@@ -154,15 +155,16 @@ model Batch {
   endDate      DateTime? @map("end_date") @db.Date
   status       String    @default("active") @db.VarChar(20)
   feePlanId    String?   @map("fee_plan_id") @db.Uuid
+  admissionFee Decimal?  @default(0) @map("admission_fee") @db.Decimal(10, 2)
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
 
   institute    Institute          @relation(fields: [instituteId], references: [id])
-  teacher      User?              @relation("TeacherBatches", fields: [teacherId], references: [id])
-  feePlan      FeePlan?           @relation(fields: [feePlanId], references: [id])
+  teacher      User?              @relation("TeacherBatches", fields: [teacherId], references: [id], onDelete: SetNull)
+  feePlan      FeePlan?           @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
   enrollments  BatchEnrollment[]
   attendance   AttendanceRecord[]
+  feeRecords   FeeRecord[]
 
   @@index([instituteId])
   @@map("batches")
@@ -182,8 +184,9 @@ model BatchEnrollment {
   createdAt    DateTime @default(now()) @map("created_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
-  batch     Batch     @relation(fields: [batchId], references: [id])
-  feePlan   FeePlan?  @relation(fields: [feePlanId], references: [id])
+  batch     Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  student   StudentProfile @relation("StudentEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
+  feePlan   FeePlan?  @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
 
   @@unique([studentId, batchId])
   @@index([instituteId])
@@ -204,7 +207,6 @@ model FeePlan {
   status       String    @default("active") @db.VarChar(20)
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
 
   institute   Institute         @relation(fields: [instituteId], references: [id])
   batches     Batch[]
@@ -222,6 +224,7 @@ model FeeRecord {
   id           String   @id @default(uuid()) @db.Uuid
   instituteId  String   @map("institute_id") @db.Uuid
   studentId    String   @map("student_id") @db.Uuid
+  batchId      String   @map("batch_id") @db.Uuid
   feePlanId    String   @map("fee_plan_id") @db.Uuid
   amount       Decimal  @db.Decimal(10, 2)
   dueDate      DateTime @map("due_date") @db.Date
@@ -231,11 +234,13 @@ model FeeRecord {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
-  student   StudentProfile @relation(fields: [studentId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  batch     Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
   feePlan   FeePlan   @relation(fields: [feePlanId], references: [id])
   payments  Payment[]
 
   @@index([instituteId, status])
+  @@index([batchId])
   @@map("fee_records")
 }
 
@@ -260,7 +265,7 @@ model Payment {
   createdAt         DateTime  @default(now()) @map("created_at")
 
   institute  Institute  @relation(fields: [instituteId], references: [id])
-  feeRecord  FeeRecord  @relation(fields: [feeRecordId], references: [id])
+  feeRecord  FeeRecord  @relation(fields: [feeRecordId], references: [id], onDelete: Cascade)
   recorder   User       @relation("RecordedBy", fields: [recordedBy], references: [id])
   voider     User?      @relation("VoidedBy", fields: [voidedBy], references: [id])
   receipt    Receipt?
@@ -284,7 +289,7 @@ model Receipt {
   createdAt       DateTime  @default(now()) @map("created_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
-  payment   Payment   @relation(fields: [paymentId], references: [id])
+  payment   Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
   @@index([instituteId])
   @@map("receipts")
@@ -309,8 +314,8 @@ model AttendanceRecord {
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
-  batch     Batch     @relation(fields: [batchId], references: [id])
-  student   User      @relation("StudentAttendance", fields: [studentId], references: [id])
+  batch     Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  student   User      @relation("StudentAttendance", fields: [studentId], references: [id], onDelete: Cascade)
   markedBy  User      @relation("MarkedBy", fields: [markedById], references: [id])
 
   @@unique([batchId, studentId, date])
@@ -332,11 +337,13 @@ model StaffAttendance {
   markedById       String    @map("marked_by") @db.Uuid
   markedAt         DateTime  @default(now()) @map("marked_at")
   note             String?
+  isLocked         Boolean   @default(false) @map("is_locked")
+  isLateSubmission Boolean   @default(false) @map("is_late_submission")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
-  staff     User      @relation("StaffAttendanceRecords", fields: [staffId], references: [id])
+  staff     User      @relation("StaffAttendanceRecords", fields: [staffId], references: [id], onDelete: Cascade)
   markedBy  User      @relation("StaffAttendanceMarkedBy", fields: [markedById], references: [id])
 
   @@unique([staffId, date])
@@ -363,7 +370,7 @@ model Notification {
   createdAt     DateTime  @default(now()) @map("created_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
-  recipient User      @relation(fields: [recipientId], references: [id])
+  recipient User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
 
   @@index([instituteId, createdAt])
   @@map("notifications")
@@ -386,7 +393,7 @@ model AuditLog {
   createdAt   DateTime @default(now()) @map("created_at")
 
   institute Institute? @relation(fields: [instituteId], references: [id])
-  user      User       @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([instituteId, createdAt])
   @@map("audit_logs")
@@ -405,7 +412,7 @@ model RefreshToken {
   revokedAt  DateTime? @map("revoked_at")
   createdAt  DateTime  @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("refresh_tokens")
@@ -431,20 +438,21 @@ model Holiday {
 // OTP Store
 // ============================================
 model OtpStore {
-  id        String   @id @default(uuid()) @db.Uuid
-  // Either phone or email will be used for OTP delivery
-  phone     String?  @db.VarChar(15)
-  email     String?  @unique @db.VarChar(255)
-  // Store a bcrypt‑hashed OTP for security
-  hashedOtp String   @db.VarChar(255)
-  attempts  Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  phone        String?  @db.VarChar(15)
+  email        String?  @db.VarChar(255)
+  hashedOtp    String   @db.VarChar(255)
+  purpose      String   @default("login") @db.VarChar(30)
+  // purpose: login | forgot_password | email_verify
+  sessionToken String?  @map("session_token") @db.VarChar(128)
+  attempts     Int      @default(0)
+  expiresAt    DateTime @map("expires_at")
+  verified     Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  // Indexes for fast lookup
+  @@index([email, purpose])
   @@index([phone])
-  @@index([email])
+  @@index([sessionToken])
   @@map("otp_store")
 }
 
@@ -465,7 +473,7 @@ model PayrollRecord {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   institute Institute @relation(fields: [instituteId], references: [id])
-  staff     User      @relation("StaffPayroll", fields: [staffId], references: [id])
+  staff     User      @relation("StaffPayroll", fields: [staffId], references: [id], onDelete: Cascade)
 
   @@index([instituteId])
   @@index([staffId])
@@ -484,7 +492,7 @@ model WalletTransaction {
   referenceNo  String?  @map("reference_no") @db.VarChar(100)
   createdAt    DateTime @default(now()) @map("created_at")
 
-  institute Institute @relation(fields: [instituteId], references: [id])
+  institute Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
 
   @@index([instituteId])
   @@map("wallet_transactions")

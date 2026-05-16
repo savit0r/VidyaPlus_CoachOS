@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { prisma } from '../../lib/prisma';
-import { logger } from '../../lib/logger';
+import prisma from '../../lib/prisma';
+import logger from '../../lib/logger';
 import { z } from 'zod';
 
 const markAttendanceSchema = z.object({
@@ -23,6 +23,21 @@ export const staffAttendanceController = {
       const attendanceDate = new Date(date);
       attendanceDate.setHours(0, 0, 0, 0);
 
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isLateSubmission = attendanceDate < today;
+
+      // Check for locks
+      const existing = await prisma.staffAttendance.findMany({
+        where: { instituteId, date: attendanceDate }
+      });
+
+      const locked = existing.filter(r => r.isLocked);
+      if (locked.length > 0 && req.user!.role !== 'owner') {
+        res.status(403).json({ success: false, error: 'Attendance is locked for this date.', code: 'LOCKED' });
+        return;
+      }
+
       // Perform upsert for each record
       const operations = records.map(record => 
         prisma.staffAttendance.upsert({
@@ -36,6 +51,9 @@ export const staffAttendanceController = {
             status: record.status,
             note: record.note,
             markedById,
+            markedAt: new Date(),
+            isLateSubmission,
+            isLocked: false,
           },
           create: {
             instituteId,
@@ -44,13 +62,34 @@ export const staffAttendanceController = {
             status: record.status,
             note: record.note,
             markedById,
+            isLateSubmission,
           }
         })
       );
 
       await Promise.all(operations);
 
-      res.json({ success: true, message: 'Attendance updated successfully' });
+      // Absence Alerts
+      const absents = records.filter(r => r.status === 'absent');
+      if (absents.length > 0) {
+        const owners = await prisma.user.findMany({ where: { instituteId, role: 'owner' } });
+        for (const owner of owners) {
+          for (const abs of absents) {
+            const staffUser = await prisma.user.findFirst({ where: { id: abs.staffId } });
+            await prisma.notification.create({
+              data: {
+                instituteId,
+                recipientId: owner.id,
+                channel: 'in_app',
+                content: `Staff Alert: ${staffUser?.name} (${staffUser?.role}) is marked ABSENT for ${date}.`,
+                status: 'unread'
+              }
+            });
+          }
+        }
+      }
+
+      res.json({ success: true, message: 'Staff attendance updated successfully' });
     } catch (error: any) {
       if (error.name === 'ZodError') {
         res.status(400).json({ success: false, error: 'Validation failed', details: error.errors });
@@ -99,7 +138,7 @@ export const staffAttendanceController = {
 
       // Group by staffId
       const summary: Record<string, any> = {};
-      attendance.forEach(rec => {
+      attendance.forEach((rec: any) => {
         if (!summary[rec.staffId]) {
           summary[rec.staffId] = { present: 0, absent: 0, leave: 0, half_day: 0 };
         }

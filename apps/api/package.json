@@ -10,7 +10,9 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:cleanup": "tsx scripts/cleanup-orphans.ts",
+    "db:wipe": "tsx scripts/wipe-db.ts"
   },
   "dependencies": {
     "@coachos/shared": "*",

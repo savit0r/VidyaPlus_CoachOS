@@ -112,7 +112,7 @@ export default function StudentLedgerPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-ink tracking-tight uppercase tracking-widest">{student?.name}'s Ledger</h1>
+            <h1 className="text-2xl font-black text-ink tracking-tight uppercase tracking-widest">{student?.name}'s Fee History</h1>
             <p className="text-[10px] font-black text-slate uppercase tracking-widest mt-1 font-mono">
               {student?.phone} • {student?.studentProfile?.studentCode}
             </p>
@@ -130,21 +130,21 @@ export default function StudentLedgerPage() {
         <div className="mint-card p-6 flex items-center gap-4 bg-canvas border-hairline">
           <div className="p-3 rounded-md bg-surface text-brand-tag border border-hairline"><FileText className="w-5 h-5" /></div>
           <div>
-            <p className="text-[10px] font-black text-slate uppercase tracking-widest mb-1">Total Invoiced</p>
+            <p className="text-[10px] font-black text-slate uppercase tracking-widest mb-1">Total Fees</p>
             <h3 className="text-2xl font-black text-ink font-mono tracking-tighter">₹{summary.totalDues.toLocaleString()}</h3>
           </div>
         </div>
         <div className="mint-card p-6 flex items-center gap-4 bg-canvas border-hairline">
           <div className="p-3 rounded-md bg-brand-green-soft text-brand-green-deep border border-brand-green/20"><CheckCircle2 className="w-5 h-5" /></div>
           <div>
-            <p className="text-[10px] font-black text-slate uppercase tracking-widest mb-1">Collections</p>
+            <p className="text-[10px] font-black text-slate uppercase tracking-widest mb-1">Total Paid</p>
             <h3 className="text-2xl font-black text-brand-green-deep font-mono tracking-tighter">₹{summary.totalPaid.toLocaleString()}</h3>
           </div>
         </div>
         <div className="mint-card p-6 flex items-center gap-4 bg-canvas border-brand-error/20">
           <div className="p-3 rounded-md bg-brand-error/10 text-brand-error border border-brand-error/20"><AlertCircle className="w-5 h-5" /></div>
           <div>
-            <p className="text-[10px] font-black text-brand-error uppercase tracking-widest mb-1">Net Dues</p>
+            <p className="text-[10px] font-black text-brand-error uppercase tracking-widest mb-1">Total Pending</p>
             <h3 className="text-2xl font-black text-brand-error font-mono tracking-tighter">₹{summary.balance.toLocaleString()}</h3>
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function StudentLedgerPage() {
       {/* High-Density Ledger Table */}
       <div className="mint-card overflow-hidden bg-canvas">
         <div className="px-6 py-4 border-b border-hairline bg-surface/30">
-          <h3 className="text-[11px] font-black text-ink uppercase tracking-widest">Transaction Statement</h3>
+          <h3 className="text-[11px] font-black text-ink uppercase tracking-widest">Transaction List</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -231,7 +231,7 @@ export default function StudentLedgerPage() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-ink/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowPaymentModal(false)}>
           <div className="w-full max-w-md bg-canvas rounded-lg shadow-premium p-10 animate-slide-up border border-hairline" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-10">
-              <h2 className="text-xl font-black text-ink tracking-tight uppercase tracking-widest">Post Receipt</h2>
+              <h2 className="text-xl font-black text-ink tracking-tight uppercase tracking-widest">Add Payment</h2>
               <button onClick={() => setShowPaymentModal(false)} className="p-2 text-steel hover:text-ink hover:bg-surface rounded-full transition-all">
                 <X className="w-5 h-5" />
               </button>
@@ -239,23 +239,23 @@ export default function StudentLedgerPage() {
 
             <div className="space-y-6">
               <div className="mint-card p-4 bg-surface/30 border-hairline">
-                <p className="text-[9px] font-black text-slate uppercase tracking-widest mb-1">Target Statement</p>
+                <p className="text-[9px] font-black text-slate uppercase tracking-widest mb-1">Selected Fee</p>
                 <p className="text-sm font-black text-ink">{selectedRecord.planName} ({selectedRecord.periodLabel})</p>
                 <div className="flex justify-between mt-3 pt-3 border-t border-hairline">
-                  <span className="text-[9px] font-black text-slate uppercase tracking-widest">Statement Balance:</span>
+                  <span className="text-[9px] font-black text-slate uppercase tracking-widest">Pending Amount:</span>
                   <span className="text-[11px] font-black text-brand-error font-mono">₹{selectedRecord.balance.toLocaleString()}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Receipt Value (₹)</label>
+                <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Payment Amount (₹)</label>
                 <input type="number" min="1" max={selectedRecord.balance} step="0.01"
                   value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)}
                   className="mint-input w-full h-12 font-mono text-lg" />
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Receipt Channel</label>
+                <label className="block text-[10px] font-black text-steel uppercase tracking-widest ml-1">Payment Mode</label>
                 <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)}
                   className="mint-input w-full h-12 uppercase font-black tracking-widest">
                   <option value="cash">Cash</option>
@@ -276,7 +276,7 @@ export default function StudentLedgerPage() {
               <div className="pt-6">
                 <button onClick={submitPayment} disabled={processing}
                   className="mint-btn-brand w-full h-14 text-xs tracking-[0.2em] uppercase shadow-lg shadow-brand-green/10">
-                  {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />} Commit Payment
+                  {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />} Save Payment
                 </button>
               </div>
             </div>

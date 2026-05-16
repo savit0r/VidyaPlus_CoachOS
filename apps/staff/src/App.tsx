@@ -3,6 +3,14 @@ import { useEffect } from 'react';
 import { useAuthStore } from './stores/auth.store';
 import LoginPage from './features/auth/LoginPage';
 import DashboardPage from './features/dashboard/DashboardPage';
+import MyProfilePage from './features/profile/MyProfilePage';
+import MyAttendancePage from './features/profile/MyAttendancePage';
+import MySalaryPage from './features/profile/MySalaryPage';
+import FeeDashboardPage from './features/fees/FeeDashboardPage';
+import FeePlansPage from './features/fees/FeePlansPage';
+import StudentLedgerPage from './features/fees/StudentLedgerPage';
+import ReceiptView from './features/fees/ReceiptView';
+import ReportsPage from './features/reports/ReportsPage';
 import StaffLayout from './components/StaffLayout';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -57,15 +65,15 @@ export default function App() {
           </ProtectedRoute>
         }>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/students" element={<PlaceholderPage title="Students" />} />
-          <Route path="/batches" element={<PlaceholderPage title="Batches" />} />
-          <Route path="/attendance" element={<PlaceholderPage title="Attendance" />} />
-          <Route path="/fees" element={<PlaceholderPage title="Fee Collection" />} />
-          <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
+          <Route path="/fees" element={<FeeDashboardPage />} />
+          <Route path="/fees/plans" element={<FeePlansPage />} />
+          <Route path="/fees/student/:studentId" element={<StudentLedgerPage />} />
+          <Route path="/fees/receipt/:receiptNumber" element={<ReceiptView />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
-          <Route path="/my-profile" element={<PlaceholderPage title="My Profile" />} />
-          <Route path="/my-attendance" element={<PlaceholderPage title="My Attendance" />} />
-          <Route path="/my-salary" element={<PlaceholderPage title="My Salary" />} />
+          <Route path="/my-profile" element={<MyProfilePage />} />
+          <Route path="/my-attendance" element={<MyAttendancePage />} />
+          <Route path="/my-salary" element={<MySalaryPage />} />
         </Route>
 
         {/* Catch-all */}
